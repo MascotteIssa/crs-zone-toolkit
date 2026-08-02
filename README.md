@@ -142,7 +142,7 @@ le standard actuel, le Québec Lambert visé serait `EPSG:6622`.
   <img alt="Échelle de distorsion divergente comparant MTM fuseau 8 et Québec Lambert" src="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/rapport-distorsion-clair.png">
 </picture>
 
-**[Ouvrir un rapport réel](docs/exemple_rapport.html)** *(clic droit → enregistrer, puis
+**[Ouvrir un rapport réel](https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/exemple_rapport.html)** *(clic droit → enregistrer, puis
 ouvrir dans un navigateur — GitHub n'exécute pas le HTML des dépôts).*
 
 ## Pour un script

@@ -66,21 +66,31 @@ path = "src/crs_zone_toolkit/__init__.py"
 packages = ["src/crs_zone_toolkit"]
 
 # Le sdist doit permettre de reconstruire le paquet ET de rejouer la suite de
-# tests — rien de plus. Son périmètre est ALIGNÉ sur celui de la vitrine
-# publique (scripts/publier_release.py) : ce qui ne sort pas sur GitHub ne
-# sort pas non plus sur PyPI. En sont donc exclus les documents internes
-# (journal de bord, prompts de session, registre d'outillage, plans/specs
-# d'agents, protocole de test manuel — qui référence des données git-ignorées
-# qu'un consommateur n'aura jamais), la configuration d'outillage locale
-# (.claude/) et les PDF de référence tiers (documents MERN/MRNF, dont la
-# rediffusion ne relève pas de notre licence MIT). `scripts/` est inclus :
-# tests/test_scripts_demos.py (DT-21) en a besoin pour rejouer la suite.
+# tests — rien de plus. Comme la vitrine publique, c'est une LISTE BLANCHE :
+# un document nouveau n'y entre que si on l'ajoute ici explicitement, jamais
+# par défaut. Son périmètre est ALIGNÉ sur celui de la vitrine
+# (PERIMETRE_VITRINE dans scripts/publier_release.py) : ce qui ne sort pas sur
+# GitHub ne sort pas non plus sur PyPI — et une version PyPI ne se dépublie
+# pas. L'alignement n'est pas une convention mais un invariant testé :
+# tests/test_scripts_publier.py échoue si une entrée ci-dessous cesse d'être
+# couverte par la liste blanche vitrine (DT-19). Le sdist est délibérément
+# PLUS ÉTROIT que la vitrine : il n'emporte ni docs/images/ ni
+# docs/exemple_rapport.html (~1,4 Mo de ressources de présentation, que le
+# README publié atteint par URL absolue raw.githubusercontent.com).
+# `/scripts` est inclus : tests/test_scripts_demos.py (DT-21) en a besoin.
 [tool.hatch.build.targets.sdist]
 include = [
   "/src",
   "/tests",
   "/scripts",
-  "/docs",
+  "/docs/ARCHITECTURE.md",
+  "/docs/CLI_UX.md",
+  "/docs/DATA_REFERENCE.md",
+  "/docs/SPEC.md",
+  "/docs/TEST_PLAN.md",
+  "/docs/calibrage",
+  "/docs/feuille_de_route.md",
+  "/docs/references.md",
   "/.github",
   "/README.md",
   "/QUICKSTART.md",
@@ -89,22 +99,12 @@ include = [
   "/pyproject.toml",
   "/uv.lock",
 ]
-# Exclus : documents internes (voir ci-dessus), PDF tiers, et les ressources de
-# présentation du README (captures, GIF, rapport d'exemple ~1,4 Mo) — le README
-# publié pointe leurs URL absolues raw.githubusercontent.com, elles n'ont donc
-# pas à voyager dans l'archive.
+# Seule exclusion résiduelle : `/tests` entre en bloc (la suite doit pouvoir
+# être rejouée), or `tests/user_test/` contient les protocoles de test manuel
+# internes — ils référencent des données git-ignorées qu'un consommateur
+# n'aura jamais. Pendant exact de EXCLUSIONS_VITRINE. Toute exclusion sous
+# `/docs` serait morte ici : la liste blanche ci-dessus s'en charge déjà.
 exclude = [
-  "/docs/*.pdf",
-  "/docs/images",
-  "/docs/exemple_rapport.html",
-  "/docs/maquette_rapport.html",
-  "/docs/journal_de_bord.md",
-  "/docs/module_prompt.md",
-  "/docs/registre_outillage.md",
-  "/docs/DETTE_TECHNIQUE.md",
-  "/docs/Definition_Projet_Detection_CRS_Quebec.md",
-  "/docs/superpowers",
-  "/docs/draft",
   "/tests/user_test/**",
 ]
 

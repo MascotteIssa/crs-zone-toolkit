@@ -12,11 +12,13 @@ import io
 import os
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from types import ModuleType
 
 RACINE = Path(__file__).resolve().parent.parent
 SCRIPT = RACINE / "scripts" / "publier_release.py"
+PYPROJECT = RACINE / "pyproject.toml"
 
 
 def _charger_script() -> ModuleType:
@@ -37,6 +39,52 @@ def _run_publier_cp1252(cible: Path) -> subprocess.CompletedProcess[bytes]:
         capture_output=True,
         env=env,
     )
+
+
+def _sdist() -> dict[str, list[str]]:
+    """Le bloc `[tool.hatch.build.targets.sdist]` tel que le build le lira."""
+    with PYPROJECT.open("rb") as flux:
+        return tomllib.load(flux)["tool"]["hatch"]["build"]["targets"]["sdist"]
+
+
+def _normaliser(entree: str) -> str:
+    """`/docs/calibrage` (écriture hatch) et `docs/calibrage/` (écriture
+    vitrine) désignent la même chose : on ramène les deux à `docs/calibrage`."""
+    return entree.strip("/")
+
+
+def _couvert_par(entree: str, perimetre: tuple[str, ...]) -> bool:
+    """Vrai si `entree` (du sdist) tombe dans une entrée de la liste blanche
+    vitrine — soit à l'identique, soit sous un de ses dossiers."""
+    cible = _normaliser(entree)
+    return any(cible == _normaliser(v) or cible.startswith(_normaliser(v) + "/") for v in perimetre)
+
+
+def test_le_perimetre_du_sdist_est_inclus_dans_celui_de_la_vitrine() -> None:
+    """DT-19 — rendre la divergence IMPOSSIBLE, pas seulement improbable.
+
+    Les deux publications doivent avoir le même périmètre : ce qui ne sort pas
+    sur GitHub ne sort pas non plus sur PyPI. La vitrine est une liste blanche ;
+    le sdist doit l'être aussi, et rester INCLUS dedans (il est délibérément
+    plus étroit : ni `docs/images/`, ni `docs/exemple_rapport.html`). Une
+    inclusion en bloc du type `/docs` rouvrirait la fuite — et une version
+    publiée sur PyPI ne se dépublie pas.
+    """
+    module = _charger_script()
+    non_couverts = [e for e in _sdist()["include"] if not _couvert_par(e, module.PERIMETRE_VITRINE)]
+    assert non_couverts == [], (
+        f"Entrées de l'`include` du sdist absentes de PERIMETRE_VITRINE : {non_couverts}. "
+        "Ajoute-les à la vitrine, ou restreins le sdist."
+    )
+
+
+def test_le_sdist_garde_l_exclusion_residuelle_du_protocole_de_test() -> None:
+    """`/tests` entre en bloc dans le sdist (la suite doit pouvoir être rejouée) :
+    sans cette exclusion, les protocoles internes de `tests/user_test/`
+    repartiraient vers PyPI. C'est le pendant exact de EXCLUSIONS_VITRINE."""
+    module = _charger_script()
+    assert "/tests/user_test/**" in _sdist()["exclude"]
+    assert "tests/user_test/" in module.EXCLUSIONS_VITRINE
 
 
 def test_exclut_les_documents_internes() -> None:
