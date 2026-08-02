@@ -88,7 +88,24 @@ def test_le_sdist_garde_l_exclusion_residuelle_du_protocole_de_test() -> None:
 
 
 def test_exclut_les_documents_internes() -> None:
-    """Aucun document interne ne traverse le filtre — c'est LA raison d'être du script."""
+    """Aucun document interne ne traverse le filtre — c'est LA raison d'être du script.
+
+    Ce fichier de test est lui-même publié (vitrine ET sdist PyPI) : il ne doit
+    donc pas servir de sommaire des documents internes. Deux régimes, selon ce
+    qui porte la valeur de preuve — `_correspond` compare un chemin EXACT hors
+    liste blanche, ou un PRÉFIXE de dossier :
+
+    - le chemin EST le fichier réel à protéger (`docs/journal_de_bord.md`, …) :
+      il reste tel quel, c'est lui la preuve, et son nom est de toute façon
+      inévitable dès qu'on veut prouver qu'il ne sort pas ;
+    - la preuve tient au DOSSIER (`docs/superpowers/plans/`, `.claude/skills/`,
+      dont aucun n'est en liste blanche) : le dossier réel est conservé, le nom
+      de fichier est générique — il n'ajoute rien au test, et l'énumérer
+      publierait un titre de document interne.
+
+    Ne « restaurez » pas les noms réels sous ces deux dossiers : la preuve
+    serait identique, la fuite gratuite.
+    """
     module = _charger_script()
     internes = [
         "docs/journal_de_bord.md",
@@ -98,8 +115,8 @@ def test_exclut_les_documents_internes() -> None:
         "docs/Definition_Projet_Detection_CRS_Quebec.md",
         "docs/maquette_rapport.html",
         "docs/CO_codes_epsg_quebec.pdf",
-        "docs/superpowers/plans/2026-08-01-passe-corrective-suivi.md",
-        ".claude/skills/referentiel-crs-quebec/SKILL.md",
+        "docs/superpowers/plans/un-plan-interne.md",
+        ".claude/skills/une-competence/SKILL.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL_Archive.md",
     ]

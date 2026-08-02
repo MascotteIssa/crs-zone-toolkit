@@ -3,7 +3,7 @@
 [![CI](https://github.com/MascotteIssa/crs-zone-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/MascotteIssa/crs-zone-toolkit/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/crs-zone-toolkit.svg)](https://pypi.org/project/crs-zone-toolkit/)
 [![Python](https://img.shields.io/pypi/pyversions/crs-zone-toolkit.svg)](https://pypi.org/project/crs-zone-toolkit/)
-[![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+[![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE)
 
 **Quel système de coordonnées pour ma couche québécoise ?** `crszone` répond avec des
 chiffres : il mesure la distorsion réellement encourue par chaque candidat, **recommande**
@@ -104,7 +104,7 @@ Mode --auto : application de la recommandation (MTM fuseau 8, EPSG:32188).
 <!-- apply:fin -->
 
 Le **pipeline PROJ exact** est affiché puis journalisé : la transformation appliquée est
-vérifiable, pas devinée. Démarrage complet : **[QUICKSTART.md](QUICKSTART.md)**.
+vérifiable, pas devinée. Démarrage complet : **[QUICKSTART.md](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md)**.
 
 ## La règle de recommandation, en deux lignes
 
@@ -117,8 +117,8 @@ jugement d'expertise servant d'étalon. La règle précédente gatait sur la par
 dominant *avant* de regarder la distorsion, et recommandait de ce fait la projection **la
 plus déformée** pour les régions compactes — le Bas-Saint-Laurent mesure 407 ppm en MTM 6
 contre 5106 ppm en Québec Lambert. Méthodologie, balayage et décision :
-[`docs/calibrage/`](docs/calibrage/2026-07-19-calibrage-seuils.md) · formalisation :
-[SPEC §4.3](docs/SPEC.md).
+[`docs/calibrage/`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/calibrage/2026-07-19-calibrage-seuils.md) · formalisation :
+[SPEC §4.3](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/SPEC.md).
 
 ## Le rapport HTML
 
@@ -202,21 +202,25 @@ amont.
 Le périmètre V1 est le Québec. Le noyau ne connaît aucun code EPSG : tous les faits
 géodésiques viennent d'un **profil de région** (`regions/qc/`), ce que verrouille un test
 dédié. C'est ce qui rendra possible l'extension au reste du Canada, puis ailleurs
-([feuille de route](docs/feuille_de_route.md)).
+([feuille de route](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/feuille_de_route.md)).
 
 ## Documentation
 
 | Document | Rôle |
 |---|---|
-| [`QUICKSTART.md`](QUICKSTART.md) | Les trois commandes, options utiles, garde-fous |
-| [`docs/SPEC.md`](docs/SPEC.md) | Cahier des charges fonctionnel V1 |
-| [`docs/DATA_REFERENCE.md`](docs/DATA_REFERENCE.md) | Source de vérité géodésique (codes EPSG vérifiés) |
-| [`docs/calibrage/`](docs/calibrage/2026-07-19-calibrage-seuils.md) | Calibrage de la règle de décision sur données réelles |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Noyau + adaptateurs, lois de dépendance, API |
-| [`docs/CLI_UX.md`](docs/CLI_UX.md) | Maquette du flux terminal |
-| [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md) | Jeux de test et protocole de calibrage |
-| [`docs/feuille_de_route.md`](docs/feuille_de_route.md) | Évolutions (Québec → Canada → international) |
-| [`docs/references.md`](docs/references.md) | Bibliographie (APA 7) — toute décision est sourcée |
+| [`QUICKSTART.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md) | Les trois commandes, options utiles, garde-fous |
+| [`docs/SPEC.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/SPEC.md) | Cahier des charges fonctionnel V1 |
+| [`docs/DATA_REFERENCE.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/DATA_REFERENCE.md) | Source de vérité géodésique (codes EPSG vérifiés) |
+| [`docs/calibrage/`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/calibrage/2026-07-19-calibrage-seuils.md) | Calibrage de la règle de décision sur données réelles |
+| [`docs/ARCHITECTURE.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/ARCHITECTURE.md) | Noyau + adaptateurs, lois de dépendance, API |
+| [`docs/CLI_UX.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/CLI_UX.md) | Maquette du flux terminal |
+| [`docs/TEST_PLAN.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/TEST_PLAN.md) | Jeux de test et protocole de calibrage |
+| [`docs/feuille_de_route.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/feuille_de_route.md) | Évolutions (Québec → Canada → international) |
+| [`docs/references.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/references.md) | Bibliographie (APA 7) — toute décision est sourcée |
+
+Les sigles `DT-xx` et `N-xx` cités au fil de ces pages sont les identifiants du registre de
+dette technique et des observations du test manuel, tenus au dépôt de développement et non
+publiés.
 
 ## Attributions
 
@@ -237,4 +241,4 @@ HTML report. **The command line, reports and documentation are in French.**
 
 ## Licence
 
-MIT — voir [`LICENSE`](LICENSE). © 2026 Issa Moussahoudou.
+MIT — voir [`LICENSE`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE). © 2026 Issa Moussahoudou.

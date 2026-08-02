@@ -33,10 +33,11 @@ non couvert par le script avant la Phase C, tâche 4).
 - Une couche de démonstration réelle. Par défaut, celle utilisée en J7 :
   `tests/user_test/data/bdat/regio_s.shp` (« 21 régions administratives du
   Québec », NAD83, multi-fuseaux). **Ce chemin n'existe pas après un simple
-  `git clone`** : `tests/user_test/` est gitignoré (données de test manuel
-  réelles, non redistribuées). Fournissez la vôtre avec `--couche`, ou
-  procurez-vous la même (« Découpages administratifs », Données Québec,
-  CC-BY 4.0 — `docs/DATA_REFERENCE.md` §6.2).
+  `git clone`** : `tests/user_test/` est hors du périmètre publié — la liste
+  blanche de `publier_release.py` ne le retient pas, et les données réelles du
+  test manuel ne sont de toute façon pas redistribuées. Fournissez la vôtre
+  avec `--couche`, ou procurez-vous la même (« Découpages administratifs »,
+  Données Québec, CC-BY 4.0 — `docs/DATA_REFERENCE.md` §6.2).
 - `playwright` et `Pillow`, **hors dépendances du paquet** (outil de
   mainteneur, comme en J7) :
 
