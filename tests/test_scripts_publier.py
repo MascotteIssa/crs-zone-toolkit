@@ -8,6 +8,10 @@ publiée sur GitHub), et que l'essentiel du produit la traverse bien.
 from __future__ import annotations
 
 import importlib.util
+import io
+import os
+import subprocess
+import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -21,6 +25,18 @@ def _charger_script() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _run_publier_cp1252(cible: Path) -> subprocess.CompletedProcess[bytes]:
+    """Lance le script en sous-processus dont la console est cp1252 (même
+    reproduction que DT-15 / `tests/test_cli_encodage.py`) — la console
+    Windows par défaut sans redirection UTF-8 explicite."""
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), "--cible", str(cible)],
+        capture_output=True,
+        env=env,
+    )
 
 
 def test_exclut_les_documents_internes() -> None:
@@ -100,3 +116,37 @@ def test_copier_recree_l_arborescence(tmp_path: Path) -> None:
     module.copier(source, cible, ["docs/SPEC.md", "README.md"])
     assert (cible / "docs" / "SPEC.md").read_text(encoding="utf-8") == "spec"
     assert (cible / "README.md").read_text(encoding="utf-8") == "readme"
+
+
+def test_dt15_forcer_utf8_reconfigure_les_flux(monkeypatch) -> None:
+    """Même contrat que `crs_zone_toolkit.cli._forcer_utf8` (DT-15) : un flux
+    cp1252 reconfigurable ressort en UTF-8, prêt à écrire « ✓ » sans planter."""
+    module = _charger_script()
+    brut_out = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(brut_out, encoding="cp1252"))
+
+    module._forcer_utf8()
+
+    assert sys.stdout.encoding.lower() == "utf-8"
+    sys.stdout.write("✓ copié")
+    sys.stdout.flush()
+    assert brut_out.getvalue().decode("utf-8") == "✓ copié"
+
+
+def test_dt15_publier_sous_cp1252_sort_en_utf8_avec_message_final(tmp_path: Path) -> None:
+    """Le défaut reproduit : sous une console cp1252 (défaut Windows sans
+    redirection UTF-8 explicite), le script copiait bien les fichiers puis
+    plantait (`UnicodeEncodeError`) sur son dernier `print` — code de sortie 1,
+    et la consigne finale (« Reste manuel… ») n'était jamais affichée alors que
+    c'est justement ce dont le mainteneur a besoin pour terminer la publication."""
+    cible = tmp_path / "cible"
+    cible.mkdir()
+    (cible / ".git").mkdir()
+
+    resultat = _run_publier_cp1252(cible)
+
+    assert resultat.returncode == 0, resultat.stderr.decode("cp1252", errors="replace")
+    sortie = resultat.stdout.decode("utf-8")
+    assert "✓" in sortie
+    assert "fichiers copiés" in sortie
+    assert "Reste manuel, dans le clone cible" in sortie

@@ -22,6 +22,7 @@ restent des gestes manuels dans le clone cible (l'utilisateur est seul auteur).
 from __future__ import annotations
 
 import argparse
+import contextlib
 import shutil
 import subprocess
 import sys
@@ -29,6 +30,22 @@ from collections.abc import Iterable
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
+
+
+def _forcer_utf8() -> None:
+    """Force l'UTF-8 sur stdout/stderr (même correctif que `cli.py`, DT-15).
+    Sans ça, une console Windows non redirigée en UTF-8 retombe sur cp1252 :
+    les « ✓ »/« ✗ »/« ⚠ » de ce script plantent (UnicodeEncodeError) après
+    coup — le script a déjà fait son travail (copie réussie) mais sort en
+    échec sans jamais afficher la consigne finale. Les flux de test/capture
+    qui n'exposent pas ``reconfigure`` sont laissés intacts."""
+    for flux in (sys.stdout, sys.stderr):
+        reconfigurer = getattr(flux, "reconfigure", None)
+        if reconfigurer is None:
+            continue
+        with contextlib.suppress(ValueError, OSError):  # flux déjà engagé / non reconfigurable
+            reconfigurer(encoding="utf-8")
+
 
 # Liste blanche : entrée finissant par « / » = préfixe (dossier), sinon chemin
 # exact. Toute évolution du périmètre public passe par une modification ICI,
@@ -100,6 +117,7 @@ def copier(racine: Path, cible: Path, fichiers: list[str]) -> None:
 
 
 def main() -> int:
+    _forcer_utf8()  # DT-15 : avant toute sortie, indépendamment du codepage console
     parseur = argparse.ArgumentParser(description=__doc__)
     parseur.add_argument(
         "--cible",
