@@ -1,0 +1,135 @@
+# Profil de région : Québec (qc)
+# SOURCE DE VÉRITÉ HUMAINE : docs/DATA_REFERENCE.md (v0.2, contre-vérifié MRNF).
+# Toute valeur ici est traçable via docs/references.md — ne rien modifier sans
+# passer par ces deux documents. Le moteur ne connaît AUCUNE de ces valeurs.
+
+[profil]
+id = "qc"
+nom = "Québec"
+version = "2026.07"
+grille = "grille_mtm_qc.geojson"   # générée par `crszone grid` (TP-32) — à produire au Jalon 1
+limite = "limite_qc.geojson"       # emprise du Québec pour la découpe (DATA_REFERENCE §6.2)
+                                   # dérivée des Découpages administratifs MRNF [REF-15], CC-BY 4.0
+# libellé d'affichage (DATA_REFERENCE §4.1) — le nom EPSG officiel reste « NAD83(CSRS)v2 / Quebec Lambert »
+etiquette_multi_zones = "Québec Lambert"
+
+[seuils]                            # SPEC §4.3 — défauts à calibrer (TEST_PLAN §5)
+part_dominante_min = 0.90
+distorsion_max_ppm = 200
+n_echantillons = 200
+
+[datum]                             # DATA_REFERENCE §1 et §5
+famille_defaut = "csrs"
+# Familles exigeant une transformation de datum EXACTE (par grille) — DT-01.
+# NAD27 : écart en dizaines de mètres, une approximation « ballpark » est
+# inacceptable → apply refuse sans la grille NTv2. Entre familles modernes
+# (WGS84/NAD83/CSRS, y compris les réalisations CSRS v2 du Lambert 6622),
+# l'écart mesuré est nul à décimétrique → repli accepté, averti et journalisé.
+familles_grille_obligatoire = ["nad27"]
+[datum.geographiques]
+csrs = 4617
+nad83 = 4269
+nad27 = 4267
+wgs84 = 4326
+
+[multi_zones]                       # Québec Lambert — DATA_REFERENCE §4.1
+csrs = 6622
+nad83 = 32198
+nad27 = 32098                       # entrée seulement (règle DATA_REFERENCE §1.5)
+
+# ── Fuseaux MTM 2 à 10 — DATA_REFERENCE §2 ──────────────────────────────
+# Bornes de grille alignées sur le réseau de 3° (…, -60, -57, -54).
+# Fuseau 2 : MC = -56 (asymétrique dans sa bande) — prescription MRNF
+# (codes 26899/32182, « piège du fuseau 2 », DATA_REFERENCE §2).
+# epsg_nad27 absent = fuseau sans code NAD27 (fuseaux 7 à 10).
+
+[[fuseaux]]
+zone = 2
+meridien_central = -56.0
+lon_min = -57.0
+lon_max = -54.0
+epsg_csrs = 26899
+epsg_nad83 = 32182
+epsg_nad27 = 32082
+
+[[fuseaux]]
+zone = 3
+meridien_central = -58.5
+lon_min = -60.0
+lon_max = -57.0
+epsg_csrs = 2945
+epsg_nad83 = 32183
+epsg_nad27 = 32083
+
+[[fuseaux]]
+zone = 4
+meridien_central = -61.5
+lon_min = -63.0
+lon_max = -60.0
+epsg_csrs = 2946
+epsg_nad83 = 32184
+epsg_nad27 = 32084
+
+[[fuseaux]]
+zone = 5
+meridien_central = -64.5
+lon_min = -66.0
+lon_max = -63.0
+epsg_csrs = 2947
+epsg_nad83 = 32185
+epsg_nad27 = 32085
+
+[[fuseaux]]
+zone = 6
+meridien_central = -67.5
+lon_min = -69.0
+lon_max = -66.0
+epsg_csrs = 2948
+epsg_nad83 = 32186
+epsg_nad27 = 32086
+
+[[fuseaux]]
+zone = 7
+meridien_central = -70.5
+lon_min = -72.0
+lon_max = -69.0
+epsg_csrs = 2949
+epsg_nad83 = 32187
+
+[[fuseaux]]
+zone = 8
+meridien_central = -73.5
+lon_min = -75.0
+lon_max = -72.0
+epsg_csrs = 2950
+epsg_nad83 = 32188
+
+[[fuseaux]]
+zone = 9
+meridien_central = -76.5
+lon_min = -78.0
+lon_max = -75.0
+epsg_csrs = 2951
+epsg_nad83 = 32189
+
+[[fuseaux]]
+zone = 10
+meridien_central = -79.5
+lon_min = -81.0
+lon_max = -78.0
+epsg_csrs = 2952
+epsg_nad83 = 32190
+
+# ── CRS « en circulation » à reconnaître en entrée — DATA_REFERENCE §4.2 ──
+# Codes reconnus mais jamais recommandés ; l'étiquette sert de mention au rapport.
+[[reconnus_entree]]
+codes = [2944]              # SCoPQ zone 2 (MC -55,5) ≡ fuseau 2, note au rapport
+etiquette = "SCoPQ zone 2"
+
+[[reconnus_entree]]
+codes = [3797, 3798, 3799]  # MTQ Lambert — ne pas confondre avec Québec Lambert
+etiquette = "MTQ Lambert"
+
+[[reconnus_entree]]
+codes = [6623, 6624]        # Québec Albers (équivalente, surfaces exactes)
+etiquette = "Québec Albers"

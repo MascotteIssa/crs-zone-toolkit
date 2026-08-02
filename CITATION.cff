@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "Si vous utilisez cet outil dans un travail ou une publication, merci de le citer ainsi."
+type: software
+title: "crs-zone-toolkit : analyse, recommandation et reprojection CRS pour les couches géospatiales du Québec"
+authors:
+  - family-names: Moussahoudou
+    given-names: Issa
+    email: imoussahoudou@gmail.com
+version: 0.1.0
+date-released: "2026-08-02"
+license: MIT
+repository-code: "https://github.com/MascotteIssa/crs-zone-toolkit"
+keywords:
+  - gis
+  - crs
+  - epsg
+  - mtm
+  - quebec
+  - reprojection
+  - geopandas
+abstract: >-
+  Outil en ligne de commande (crszone) qui analyse une couche géospatiale,
+  mesure la distorsion des projections candidates du profil régional (fuseaux
+  MTM et Québec Lambert pour le Québec), recommande la projection la moins
+  déformée avec sa justification chiffrée, et applique la reprojection ou le
+  découpage par fuseau avec un journal de décision traçable.

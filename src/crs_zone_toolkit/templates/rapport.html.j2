@@ -1,0 +1,301 @@
+<!-- ============================================================
+  CRS Zone Toolkit — rapport d'analyse (SPEC §7)
+  Rendu premium commutable clair/sombre (validé en maquette 2026-07-17) :
+  verdict en héros, distorsion en échelle divergente centrée sur 0 ppm.
+  Fichier auto-porté : CSS + JS inline, carte matplotlib en PNG base64,
+  AUCUNE ressource externe (http/https). Le seul JS pose et bascule le thème ;
+  sans JS le rapport s'affiche en thème clair (dégradation lisible).
+============================================================ -->
+<!doctype html><html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyse CRS — {{ couche }}</title>
+<script>
+/* Pose le thème AVANT le premier rendu (pas de flash) : choix mémorisé, sinon réglage de l'OS. */
+(function(){var r=document.documentElement,K='crszone-theme',s=null;try{s=localStorage.getItem(K);}catch(e){}var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)');r.setAttribute('data-theme',s||(m&&m.matches?'dark':'light'));})();
+</script>
+<style>
+  :root{
+    --paper:#eeeee9; --card:#ffffff; --ink:#15171c; --ink2:#3d424b; --muted:#797f88;
+    --line:#e4e4de; --line2:#d3d3cb; --blue:#1f5fb0; --blue-soft:#eaf1fb;
+    --good:#12864e; --danger:#c23a2b; --warn:#bd7a12; --accent:#e8622a;
+    --sheet-shadow:0 1px 2px rgba(20,23,28,.04),0 24px 48px -28px rgba(20,23,28,.22);
+    --code-bg:#15171c; --code-fg:#ffffff; --code-sub:#a7adba;
+    --tol-bg:repeating-linear-gradient(45deg,#eef4ee,#eef4ee 5px,#e6efe6 5px,#e6efe6 10px);
+    --tol-border:#bcd7c4; --rail:#eef0f2; --chip:#f2f3f4; --repro-bg:#f6f7f8;
+    --seg-shadow:none; --map-plate:#fbfbf9; --ambient:none;
+    --tag-bg:var(--blue-soft); --tag-fg:var(--blue);
+    --avert-fg:#7a5406; --avert-bg:#fdf7ea; --avert-bd:#f0e2be;
+  }
+  :root[data-theme="dark"]{
+    --paper:#0c0f16; --card:#141922; --ink:#e9edf3; --ink2:#aeb7c4; --muted:#727d8d;
+    --line:#232c39; --line2:#2b3644; --blue:#38bdf8; --blue-soft:rgba(56,189,248,.12);
+    --good:#34d399; --danger:#f87171; --warn:#fbbf24; --accent:#f59e6a;
+    --sheet-shadow:0 30px 70px -40px rgba(0,0,0,.8);
+    --code-bg:#0a0d13; --code-fg:#34d399; --code-sub:#8a93a0;
+    --tol-bg:rgba(52,211,153,.10); --tol-border:rgba(52,211,153,.45);
+    --rail:#1c2531; --chip:rgba(56,189,248,.10); --repro-bg:#0a0d13;
+    --seg-shadow:0 0 12px currentColor; --map-plate:#0f141c;
+    --ambient:radial-gradient(900px 500px at 85% -8%,rgba(56,189,248,.10),transparent 60%),
+              radial-gradient(700px 520px at -5% 108%,rgba(129,140,248,.09),transparent 55%);
+    --tag-bg:rgba(129,140,248,.16); --tag-fg:#a5b0ff;
+    --avert-fg:#f0d9a3; --avert-bg:rgba(251,191,36,.08); --avert-bd:rgba(251,191,36,.25);
+  }
+  *{ box-sizing:border-box; }
+  html{ color-scheme:light dark; }
+  body{ margin:0; background:var(--ambient),var(--paper); color:var(--ink);
+    font:15px/1.55 -apple-system,"Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums;
+    transition:background .35s ease,color .35s ease; }
+  .mono{ font-family:ui-monospace,"Cascadia Code",Consolas,monospace; }
+  .wrap{ max-width:900px; margin:0 auto; padding:40px 24px 64px; }
+  .sheet{ background:var(--card); border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--sheet-shadow); overflow:hidden; transition:background .35s,border-color .35s; }
+
+  .theme-toggle{ position:fixed; top:20px; right:22px; z-index:50; width:40px; height:40px;
+    display:grid; place-items:center; border:1px solid var(--line2); border-radius:11px;
+    background:var(--card); color:var(--ink2); cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.10); transition:background .2s,color .2s,transform .15s; }
+  .theme-toggle:hover{ color:var(--ink); transform:translateY(-1px); }
+  .theme-toggle:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
+  .theme-toggle .moon{ display:none; } .theme-toggle .sun{ display:block; }
+  :root[data-theme="dark"] .theme-toggle .sun{ display:none; }
+  :root[data-theme="dark"] .theme-toggle .moon{ display:block; }
+
+  .mast{ padding:26px 40px 22px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); display:flex; align-items:center; gap:8px; }
+  .eyebrow::before{ content:""; width:22px; height:2px; background:var(--accent); }
+  .mast h1{ margin:8px 0 3px; font-size:25px; letter-spacing:-.02em; font-weight:750; }
+  .mast .sub{ color:var(--ink2); font-size:14px; } .mast .sub code{ color:var(--blue); }
+  .stamp{ text-align:right; color:var(--muted); font-size:11.5px; line-height:1.7; }
+  .body{ padding:8px 40px 34px; }
+
+  .verdict{ margin:26px 0 6px; border:1px solid var(--line2); border-radius:12px; overflow:hidden; }
+  :root[data-theme="dark"] .verdict{ border-color:#2c4a44;
+    background:linear-gradient(135deg,rgba(52,211,153,.10),rgba(56,189,248,.05)); }
+  .verdict.aucune{ border-color:var(--warn); }
+  :root[data-theme="dark"] .verdict.aucune{ background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.35); }
+  .verdict .vtop{ display:flex; align-items:stretch; }
+  .verdict .vmain{ flex:1; padding:20px 24px; }
+  .verdict .vk{ font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--good); display:flex; align-items:center; gap:8px; }
+  .verdict .vk.warn{ color:var(--warn); }
+  .verdict .vk .dot{ width:8px; height:8px; border-radius:99px; background:currentColor; }
+  :root[data-theme="dark"] .verdict .vk .dot{ box-shadow:0 0 10px currentColor; }
+  .verdict .vname{ font-size:23px; font-weight:750; letter-spacing:-.02em; margin:6px 0 2px; }
+  .verdict .vmotif{ color:var(--ink2); font-size:14px; max-width:52ch; margin-top:8px; }
+  .verdict .vcode{ width:184px; background:var(--code-bg); color:var(--code-fg); padding:20px 22px;
+    display:flex; flex-direction:column; justify-content:center; gap:2px; }
+  :root[data-theme="dark"] .verdict .vcode{ background:transparent; border-left:1px solid #2c4a44; }
+  .verdict .vcode .lab{ font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--code-sub); }
+  .verdict .vcode .code{ font:600 26px/1.1 ui-monospace,Consolas,monospace; letter-spacing:-.01em; }
+  :root[data-theme="dark"] .verdict .vcode .code{ text-shadow:0 0 20px rgba(52,211,153,.45); }
+  .verdict .vcode .fam{ font-size:12px; color:var(--code-sub); margin-top:6px; }
+
+  .sec{ margin:34px 0 12px; display:flex; align-items:baseline; gap:12px; }
+  .sec .n{ font:600 12px/1 ui-monospace,Consolas,monospace; color:var(--card); background:var(--ink);
+    padding:5px 7px; border-radius:5px; }
+  :root[data-theme="dark"] .sec .n{ color:var(--blue); background:var(--blue-soft); border:1px solid #2a4657; }
+  .sec h2{ margin:0; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2); }
+  .sec .rule{ flex:1; height:1px; background:var(--line); }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 40px; }
+  .kv{ display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .kv .k{ color:var(--muted); font-size:13px; } .kv .v{ font-size:14px; text-align:right; }
+  .kv .v code{ font-family:ui-monospace,Consolas,monospace; font-size:.92em; color:var(--blue); }
+  .tag{ display:inline-block; background:var(--tag-bg); color:var(--tag-fg); font-size:12px; font-weight:600; padding:1px 9px; border-radius:999px; }
+  .avert{ display:flex; gap:11px; margin:16px 0 2px; padding:12px 16px; font-size:13.5px; border-radius:10px;
+    color:var(--avert-fg); background:var(--avert-bg); border:1px solid var(--avert-bd); }
+  .avert .i{ font-weight:700; color:var(--warn); }
+
+  .plate{ border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--map-plate); margin-top:4px; }
+  .plate img{ width:100%; display:block; border-radius:7px; }
+  .cap{ color:var(--muted); font-size:12px; padding:9px 4px 2px; display:flex; align-items:center; gap:8px; }
+  .cap::before{ content:""; width:20px; height:0; border-top:2.5px solid var(--blue); }
+
+  .fz{ display:grid; grid-template-columns:200px 1fr 66px; align-items:center; gap:14px; padding:6px 0; }
+  .fz-lab{ font-size:13.5px; } .fz-lab small{ color:var(--muted); margin-left:6px; font-size:11.5px; }
+  .fz-rail{ height:8px; background:var(--rail); border-radius:999px; overflow:hidden; }
+  .fz-fill{ height:100%; background:linear-gradient(90deg,#3f86e0,var(--blue)); border-radius:999px; }
+  :root[data-theme="dark"] .fz-fill{ background:linear-gradient(90deg,#818cf8,var(--blue)); }
+  .fz-val{ text-align:right; font-size:13.5px; font-weight:600; } .fz.z0{ opacity:.5; }
+
+  .d-note{ color:var(--ink2); font-size:13px; margin:2px 0 16px; max-width:70ch; }
+  .d-row{ padding:12px 0 16px; border-top:1px solid var(--line); } .d-row:first-of-type{ border-top:none; }
+  .d-head{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+  .d-nom{ font-weight:650; font-size:14px; }
+  .d-epsg{ font-family:ui-monospace,Consolas,monospace; font-size:11.5px; color:var(--muted); background:var(--chip); padding:1px 7px; border-radius:5px; }
+  .d-badge{ margin-left:auto; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:999px; }
+  .d-badge.hs{ color:var(--danger); } .d-badge.ok{ color:var(--good); }
+  :root .d-badge.hs{ background:#fbecea; } :root .d-badge.ok{ background:#e8f5ee; }
+  :root[data-theme="dark"] .d-badge.hs{ background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.3); }
+  :root[data-theme="dark"] .d-badge.ok{ background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.3); }
+  .scale{ position:relative; height:30px; margin:0 4px; overflow:hidden; }
+  .tol{ position:absolute; top:6px; height:18px; background:var(--tol-bg);
+    border-left:1px solid var(--tol-border); border-right:1px solid var(--tol-border); border-radius:2px; }
+  .zero{ position:absolute; top:0; height:30px; width:1.5px; background:var(--ink); transform:translateX(-.75px); }
+  .seg{ position:absolute; top:11px; height:8px; border-radius:999px; min-width:3px; box-shadow:var(--seg-shadow); }
+  .seg.hs{ background:var(--danger); color:var(--danger); } .seg.ok{ background:var(--good); color:var(--good); }
+  .tick{ position:absolute; top:7px; height:16px; width:2px; background:var(--ink2); transform:translateX(-1px); }
+  .d-nums{ display:flex; align-items:center; gap:20px; margin-top:9px; font-size:13px; color:var(--ink2); }
+  .d-nums b{ color:var(--ink); font-weight:650; }
+  .d-nums .mx.hs{ color:var(--danger); } .d-nums .mx.ok{ color:var(--good); }
+  .d-nums .fh{ color:var(--muted); font-style:italic; } .d-nums .ppm{ margin-left:auto; color:var(--muted); }
+  .d-legend{ display:flex; gap:18px; font-size:11.5px; color:var(--muted); margin:2px 4px 4px; }
+  .d-legend span{ display:flex; align-items:center; gap:6px; }
+  .lg-tol{ width:16px; height:10px; background:var(--tol-bg); border:1px solid var(--tol-border); border-radius:2px; }
+  .lg-zero{ width:2px; height:12px; background:var(--ink); }
+
+  .alt{ border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:14px 18px; margin-top:6px; }
+  :root[data-theme="dark"] .alt{ background:rgba(129,140,248,.05); }
+  .alt .t{ font-weight:650; font-size:14px; } .alt p{ margin:5px 0 0; color:var(--ink2); font-size:13.5px; }
+  .empty{ color:var(--muted); font-size:13.5px; }
+  .note-p{ font-size:14px; color:var(--ink2); max-width:74ch; }
+  .repro{ font-family:ui-monospace,Consolas,monospace; font-size:12.5px; background:var(--repro-bg);
+    border:1px solid var(--line); border-radius:8px; padding:11px 14px; color:var(--ink2); margin-top:6px; }
+  .repro .p{ color:var(--good); } .repro b{ color:var(--ink); }
+  :root[data-theme="dark"] .repro b{ color:var(--blue); }
+  footer{ margin-top:36px; padding:16px 40px 26px; border-top:1px solid var(--line); color:var(--muted); font-size:11.5px; line-height:1.7; }
+  footer b{ color:var(--ink2); }
+
+  @media print{
+    :root{ --paper:#fff; }
+    .theme-toggle{ display:none; }
+    body{ background:#fff !important; color:#15171c; }
+    .wrap{ padding:0; max-width:none; } .sheet{ border:none; box-shadow:none; }
+    .seg,.fz-fill,.verdict .vcode{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+  @media(max-width:640px){
+    .grid2{ grid-template-columns:1fr; } .verdict .vtop{ flex-direction:column; } .verdict .vcode{ width:100%; }
+    .mast{ padding:22px 22px 18px; } .body{ padding:8px 22px 28px; } .fz{ grid-template-columns:150px 1fr 56px; }
+  }
+  @media(prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+
+<button id="tgl" class="theme-toggle" type="button" aria-label="Basculer clair / sombre" title="Clair / sombre">
+  <span class="sun"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg></span>
+  <span class="moon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.2 6.2 0 0 0 10.5 10.5z"/></svg></span>
+</button>
+
+<div class="wrap"><div class="sheet">
+
+  <div class="mast">
+    <div>
+      <div class="eyebrow">Analyse CRS · profil {{ profil_nom }}</div>
+      <h1>{{ couche }}</h1>
+      <div class="sub">{{ n_entites }} entités · {{ type_geometrie }} · {{ crs_declare }}</div>
+    </div>
+    <div class="stamp mono">crszone {{ version }}<br>{{ genere_le }}<br>schéma v1</div>
+  </div>
+
+  <div class="body">
+
+    {% if action == "aucune" %}
+    <div class="verdict aucune"><div class="vtop"><div class="vmain">
+      <div class="vk warn"><span class="dot"></span>Aucune cible</div>
+      <div class="vname">Données hors du profil</div>
+      <div class="vmotif">{{ motif }}</div>
+    </div></div></div>
+    {% else %}
+    <div class="verdict"><div class="vtop">
+      <div class="vmain">
+        <div class="vk"><span class="dot"></span>Recommandation</div>
+        <div class="vname">{{ reco_titre }}</div>
+        <div class="vmotif">{{ motif }}</div>
+      </div>
+      <div class="vcode"><span class="lab">Cible EPSG</span><span class="code mono">{{ cible_epsg }}</span><span class="fam">cible projetée</span></div>
+    </div></div>
+    {% endif %}
+
+    <div class="sec"><span class="n">01</span><h2>Couche analysée</h2><span class="rule"></span></div>
+    <div class="grid2">
+      <div class="kv"><span class="k">Fichier</span><span class="v"><code>{{ couche }}</code></span></div>
+      <div class="kv"><span class="k">Entités / géométrie</span><span class="v">{{ n_entites }} · {{ type_geometrie }}</span></div>
+      <div class="kv"><span class="k">CRS déclaré</span><span class="v"><code>{{ crs_declare }}</code></span></div>
+      <div class="kv"><span class="k">Famille de datum</span><span class="v"><span class="tag">{{ famille_libelle }}</span></span></div>
+    </div>
+    <div class="kv" style="border-bottom:none"><span class="k">Emprise</span><span class="v">{{ emprise_texte }}</span></div>
+    {% for a in avertissements %}
+    <div class="avert"><span class="i">⚠</span><span>{{ a }}</span></div>
+    {% endfor %}
+
+    <div class="sec"><span class="n">02</span><h2>Situation dans les fuseaux MTM</h2><span class="rule"></span></div>
+    <div class="plate">
+      <img src="{{ carte }}" alt="Emprise des données sur la grille des fuseaux MTM">
+      <div class="cap">Géométrie de la couche (tracé bleu) · bandes : fuseaux MTM du profil {{ region }}</div>
+    </div>
+    <div style="margin-top:16px">
+      {% for f in fuseaux %}
+      <div class="fz {{ 'z0' if f.pct == 0 else '' }}">
+        <div class="fz-lab">Fuseau {{ f.zone }}<small>EPSG:{{ f.epsg }}</small></div>
+        <div class="fz-rail"><div class="fz-fill" style="width:{{ f.pct }}%"></div></div>
+        <div class="fz-val">{{ f.pct_txt }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="sec"><span class="n">03</span><h2>Distorsion mesurée</h2><span class="rule"></span></div>
+    <p class="d-note"><b>Ce qui est mesuré.</b> Aucune projection ne conserve toutes les distances : en chaque point, elle multiplie les longueurs par un <i>facteur d'échelle</i> légèrement différent de 1. On exprime cet écart en <b>ppm</b> (parties par million) : 0 ppm signifie qu'à cet endroit la carte respecte les distances du terrain, et <b>100 ppm valent 10 cm par kilomètre</b>.</p>
+    <p class="d-note"><b>Ce que dit le signe.</b> Une valeur <b>négative</b> signifie que les distances lues sur la carte sont <b>plus courtes</b> que sur le terrain — une <i>compression</i>. Une valeur <b>positive</b>, <b>plus longues</b> — une <i>dilatation</i>. C'est pour cela que l'échelle ci-dessous est <b>centrée sur 0</b> : elle s'écarte des deux côtés, et la bande marque la tolérance de ±{{ seuil_ppm }} ppm.</p>
+    <p class="d-note"><b>Comment.</b> Facteur d'échelle exact calculé en {{ p.n_echantillons }} points d'échantillonnage (<code>pyproj.get_factors()</code>). Les projections comparées ici sont <i>conformes</i> — Mercator transverse pour les fuseaux MTM, conique conforme pour le Québec Lambert : en un point donné, le facteur ne dépend pas de la direction, un seul nombre suffit donc à le décrire.</p>
+    {% for d in distorsions %}
+    <div class="d-row">
+      <div class="d-head">
+        <span class="d-nom">{{ d.libelle }}</span>
+        <span class="d-epsg">EPSG:{{ d.epsg }}</span>
+        <span class="d-badge {{ 'hs' if d.hors_seuil else 'ok' }}">{{ 'hors tolérance' if d.hors_seuil else 'sous tolérance' }}</span>
+      </div>
+      <div class="scale">
+        <div class="tol" style="left:{{ '%.2f'|format(d.scale.tol_left) }}%;width:{{ '%.2f'|format(d.scale.tol_width) }}%"></div>
+        <div class="zero" style="left:{{ '%.2f'|format(d.scale.zero) }}%"></div>
+        <div class="seg {{ 'hs' if d.hors_seuil else 'ok' }}" style="left:{{ '%.2f'|format(d.scale.seg_left) }}%;width:{{ '%.2f'|format(d.scale.seg_width) }}%"></div>
+        <div class="tick" style="left:{{ '%.2f'|format(d.scale.min_pos) }}%"></div>
+        <div class="tick" style="left:{{ '%.2f'|format(d.scale.max_pos) }}%"></div>
+      </div>
+      <div class="d-nums">
+        <span>min <b>{{ d.min }}</b></span><span>moy <b>{{ d.moy }}</b></span>
+        <span>max <b class="mx {{ 'hs' if d.hors_seuil else 'ok' }}">{{ d.max }}</b></span>
+        <span class="fh">{% if d.facteur %}≈ ×{{ d.facteur }} la tolérance{% else %}dans la tolérance{% endif %}</span>
+        <span class="ppm">ppm</span>
+      </div>
+    </div>
+    {% endfor %}
+    <div class="d-legend">
+      <span><span class="lg-zero"></span>0 ppm (aucune distorsion)</span>
+      <span><span class="lg-tol"></span>tolérance ±{{ seuil_ppm }} ppm</span>
+    </div>
+
+    <div class="sec"><span class="n">04</span><h2>Alternative</h2><span class="rule"></span></div>
+    {% for alt in alternatives %}
+    <div class="alt"><div class="t">{{ alt.titre }}</div><p>{{ alt.description }}</p></div>
+    {% else %}
+    <p class="empty">Aucune alternative pertinente pour ce cas.</p>
+    {% endfor %}
+
+    <div class="sec"><span class="n">05</span><h2>Note sur le datum</h2><span class="rule"></span></div>
+    <p class="note-p">{{ note_datum }}</p>
+
+    <div class="sec"><span class="n">06</span><h2>Méthodologie</h2><span class="rule"></span></div>
+    <div class="kv"><span class="k">Règle de décision</span><span class="v">On recommande la projection unique la moins déformée entre le fuseau dominant et le Québec Lambert ; le découpage par fuseau est offert si la distorsion dépasse la tolérance</span></div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="kv"><span class="k">Seuil de distorsion <code>distorsion_max_ppm</code></span><span class="v">{{ p.distorsion_max_ppm }} ppm</span></div>
+      <div class="kv"><span class="k">Échantillonnage</span><span class="v">{{ p.n_echantillons }} points</span></div>
+    </div>
+    <div class="repro"><span class="p">$</span> <b>crszone analyze {{ couche }} --region {{ region }}</b></div>
+
+  </div>
+
+  <footer>
+    <p>Généré par <b>crszone</b> {{ version }} (crs-zone-toolkit) le {{ genere_le }} — rapport auto-porté, aucune ressource externe, imprimable (Ctrl+P).</p>
+    <p>Grille des fuseaux : MRNF, <i>Découpages administratifs</i>, Données Québec (CC-BY 4.0). Codes EPSG : registre epsg.org. Ce rapport recommande, l'utilisateur décide — décision consignée au journal (<code>*_journal.json</code>).</p>
+  </footer>
+
+</div></div>
+
+<script>
+/* Le bouton bascule le thème et mémorise le choix (l'init du thème est dans le <head>). */
+(function(){var r=document.documentElement,K='crszone-theme',b=document.getElementById('tgl');if(b)b.addEventListener('click',function(){var n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem(K,n);}catch(e){}});})();
+</script>
+</html>

@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # docs/exemple_rapport.html est un ARTEFACT produit par `crszone analyze` :
+      # il doit rester ce que l'outil écrit réellement. Le retoucher ici en
+      # ferait un faux témoin (cf. DT-17, qui suit sa péremption).
+      - id: trailing-whitespace
+        exclude: ^docs/exemple_rapport\.html$
+      - id: end-of-file-fixer
+        exclude: ^docs/exemple_rapport\.html$
+      - id: check-added-large-files
+        args: [--maxkb=500]
+        # PDF officiel MRNF = source de vérité géodésique [REF-01], vérifié.
+        # Le seuil serré (500 Ko) reste actif ailleurs : garde-fou anti-binaire
+        # géospatial committé (TEST_PLAN principe 1).
+        exclude: ^docs/CO_codes_epsg_quebec\.pdf$
+      - id: check-toml
+      - id: check-yaml
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format

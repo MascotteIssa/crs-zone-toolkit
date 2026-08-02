@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crs-zone-toolkit/schemas/analyse_v1.schema.json",
+  "title": "Sortie d'analyse CRS (SPEC §8)",
+  "type": "object",
+  "required": [
+    "schema_version", "couche", "crs_entree", "famille", "type_geometrie",
+    "emprise", "zones_traversees", "part_hors_profil", "distorsion",
+    "recommandation", "avertissements", "parametres"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "couche": {"type": "string"},
+    "crs_entree": {"type": "object"},
+    "famille": {"type": "string"},
+    "type_geometrie": {"type": "string"},
+    "emprise": {
+      "type": "object",
+      "required": ["lon_min", "lat_min", "lon_max", "lat_max"],
+      "properties": {
+        "lon_min": {"type": "number"}, "lat_min": {"type": "number"},
+        "lon_max": {"type": "number"}, "lat_max": {"type": "number"}
+      }
+    },
+    "zones_traversees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["zone", "epsg", "part"],
+        "properties": {
+          "zone": {"type": "integer"}, "epsg": {"type": "integer"},
+          "part": {"type": "number"}
+        }
+      }
+    },
+    "part_hors_profil": {"type": "number"},
+    "distorsion": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["libelle", "min_ppm", "moy_ppm", "max_ppm"],
+        "properties": {
+          "libelle": {"type": "string"}, "min_ppm": {"type": "number"},
+          "moy_ppm": {"type": "number"}, "max_ppm": {"type": "number"}
+        }
+      }
+    },
+    "recommandation": {
+      "type": "object",
+      "required": ["action", "cible_epsg", "cible_libelle", "motif_code", "motif", "alternatives"],
+      "properties": {
+        "action": {"enum": ["zone", "lambert", "aucune"]},
+        "cible_epsg": {"type": "integer"},
+        "cible_libelle": {"type": "string"},
+        "motif_code": {
+          "enum": ["mono_zone", "zone_dominante", "zone_moins_deformee",
+                   "lambert_moins_deforme", "hors_profil"]
+        },
+        "motif": {"type": "string"},
+        "alternatives": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "avertissements": {"type": "array", "items": {"type": "string"}},
+    "parametres": {"type": "object"}
+  }
+}

@@ -1,0 +1,10 @@
+# Fins de ligne normalisées en LF partout : cohérence entre le dév Windows et
+# la CI Ubuntu/Windows, et alignement avec ruff format (qui attend du LF).
+* text=auto eol=lf
+
+# Binaires : jamais de normalisation de fins de ligne.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.gpkg binary
+*.parquet binary

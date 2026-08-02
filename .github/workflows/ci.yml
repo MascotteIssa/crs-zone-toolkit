@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    env:
+      # setup-uv n'a pas d'entrée python-version fiable selon la version ;
+      # UV_PYTHON force uv à créer le venv et à exécuter avec CETTE version
+      # (téléchargée au besoin) — la matrice teste donc réellement 3.11/3.12/3.13.
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Installer les dépendances
+        run: uv sync --group dev
+
+      - name: Lint (ruff)
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Types (mypy)
+        run: uv run mypy
+
+      - name: Tests (pytest)
+        run: uv run pytest

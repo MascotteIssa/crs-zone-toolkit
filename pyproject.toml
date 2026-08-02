@@ -1,0 +1,140 @@
+[project]
+name = "crs-zone-toolkit"
+# La version est lue dans src/crs_zone_toolkit/__init__.py (source unique de
+# vérité — __version__ est aussi ce qu'affiche `crszone --version` et ce qui est
+# estampillé dans le journal de décision et le rapport HTML).
+dynamic = ["version"]
+description = "Analyse, recommandation et reprojection CRS pour les couches géospatiales du Québec (fuseaux MTM, Québec Lambert)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Issa Moussahoudou", email = "imoussahoudou@gmail.com" }]
+requires-python = ">=3.11"
+keywords = ["gis", "crs", "epsg", "mtm", "quebec", "reprojection", "geopandas"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: French",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Typing :: Typed",
+]
+dependencies = [
+  "geopandas>=1.0",
+  "pyogrio>=0.8",
+  "shapely>=2.0",
+  "pyproj>=3.6",
+  "typer>=0.12",
+  "rich>=13.0",
+  "jinja2>=3.1",
+  "matplotlib>=3.8",
+]
+
+[project.scripts]
+crszone = "crs_zone_toolkit.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/MascotteIssa/crs-zone-toolkit"
+Repository = "https://github.com/MascotteIssa/crs-zone-toolkit"
+Documentation = "https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md"
+Issues = "https://github.com/MascotteIssa/crs-zone-toolkit/issues"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "pre-commit>=3.7",
+  "jsonschema>=4.0",
+]
+
+[build-system]
+# >=1.27 : gère la licence en expression SPDX (PEP 639, `license = "MIT"`).
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/crs_zone_toolkit/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/crs_zone_toolkit"]
+
+# Le sdist doit permettre de reconstruire le paquet ET de rejouer la suite de
+# tests — rien de plus. Son périmètre est ALIGNÉ sur celui de la vitrine
+# publique (scripts/publier_release.py) : ce qui ne sort pas sur GitHub ne
+# sort pas non plus sur PyPI. En sont donc exclus les documents internes
+# (journal de bord, prompts de session, registre d'outillage, plans/specs
+# d'agents, protocole de test manuel — qui référence des données git-ignorées
+# qu'un consommateur n'aura jamais), la configuration d'outillage locale
+# (.claude/) et les PDF de référence tiers (documents MERN/MRNF, dont la
+# rediffusion ne relève pas de notre licence MIT). `scripts/` est inclus :
+# tests/test_scripts_demos.py (DT-21) en a besoin pour rejouer la suite.
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/scripts",
+  "/docs",
+  "/.github",
+  "/README.md",
+  "/QUICKSTART.md",
+  "/LICENSE",
+  "/CITATION.cff",
+  "/pyproject.toml",
+  "/uv.lock",
+]
+# Exclus : documents internes (voir ci-dessus), PDF tiers, et les ressources de
+# présentation du README (captures, GIF, rapport d'exemple ~1,4 Mo) — le README
+# publié pointe leurs URL absolues raw.githubusercontent.com, elles n'ont donc
+# pas à voyager dans l'archive.
+exclude = [
+  "/docs/*.pdf",
+  "/docs/images",
+  "/docs/exemple_rapport.html",
+  "/docs/maquette_rapport.html",
+  "/docs/journal_de_bord.md",
+  "/docs/module_prompt.md",
+  "/docs/registre_outillage.md",
+  "/docs/DETTE_TECHNIQUE.md",
+  "/docs/Definition_Projet_Detection_CRS_Quebec.md",
+  "/docs/superpowers",
+  "/docs/draft",
+  "/tests/user_test/**",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PTH"]
+
+# typer.Option/Argument sont des appels « immuables » au sens B008 : leur
+# valeur par défaut n'est évaluée qu'une fois, à la définition, ce qui est le
+# fonctionnement voulu par Typer (pas un piège de mutabilité).
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Option", "typer.Argument"]
+
+# python_version = 3.12 : plancher pour le type-check uniquement (stubs numpy 2.5
+# utilisent la syntaxe PEP 695, non parsable par mypy en 3.11). Le plancher
+# runtime reste 3.11 (requires-python, ruff target-version=py311, CI sur 3.11).
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+
+# geopandas/shapely/pyproj/matplotlib ne fournissent pas de stubs complets :
+# on ignore l'absence de stubs pour ces libs (le code du projet reste typé strict).
+[[tool.mypy.overrides]]
+module = ["geopandas.*", "shapely.*", "pyproj.*", "pyogrio.*", "matplotlib.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --cov=crs_zone_toolkit --cov-report=term-missing"
