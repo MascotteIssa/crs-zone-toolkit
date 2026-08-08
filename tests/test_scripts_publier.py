@@ -16,6 +16,8 @@ import tomllib
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 RACINE = Path(__file__).resolve().parent.parent
 SCRIPT = RACINE / "scripts" / "publier_release.py"
 PYPROJECT = RACINE / "pyproject.toml"
@@ -46,6 +48,25 @@ def _source_renommee_en(module: ModuleType, destination: str) -> str:
     sources = [s for s, d in module.RENOMMAGES_VITRINE if d == destination]
     assert len(sources) == 1, f"Une seule source attendue pour {destination!r}, trouvé : {sources}"
     return sources[0]
+
+
+def _gitignore_a_controler(module: ModuleType) -> Path | None:
+    """Le `.gitignore` destiné au public, où qu'on exécute la suite.
+
+    Au dépôt de développement, c'est la SOURCE renommée à la copie. Dans la
+    vitrine (et dans le sdist déplié), cette source n'est pas publiée : ce qui
+    existe, c'est le `.gitignore` déjà produit. Viser l'un ou l'autre garde le
+    contrôle vrai des deux côtés, et le rend même plus fort à la vitrine
+    puisqu'il porte alors sur l'artefact réellement livré.
+
+    Rend `None` dans le sdist déplié, qui ne transporte ni l'outillage de
+    publication ni les métadonnées git : il n'y a alors rien à contrôler.
+    """
+    source = RACINE / _source_renommee_en(module, ".gitignore")
+    if source.is_file():
+        return source
+    publie = RACINE / ".gitignore"
+    return publie if publie.is_file() else None
 
 
 def _sdist() -> dict[str, list[str]]:
@@ -178,9 +199,10 @@ def test_le_gitignore_publie_n_ecrit_que_du_vocabulaire_autorise() -> None:
     publié par renommage à la copie. Ce test le tient au vocabulaire décidé.
     """
     module = _charger_script()
-    source = RACINE / _source_renommee_en(module, ".gitignore")
-    assert source.is_file(), f"{source} manque — la vitrine n'aurait aucun .gitignore."
-    lignes = [ligne.strip() for ligne in source.read_text(encoding="utf-8").splitlines()]
+    fichier = _gitignore_a_controler(module)
+    if fichier is None:
+        pytest.skip("sdist déplié : ni outillage de publication, ni .gitignore à contrôler.")
+    lignes = [ligne.strip() for ligne in fichier.read_text(encoding="utf-8").splitlines()]
     hors_vocabulaire = [
         ligne
         for ligne in lignes
@@ -229,7 +251,10 @@ def test_copier_renomme_a_la_copie(tmp_path: Path) -> None:
 def test_le_gitignore_publie_couvre_l_essentiel_d_un_contributeur() -> None:
     """Utile, pas seulement inoffensif : caches Python, build et sorties de l'outil."""
     module = _charger_script()
-    contenu = (RACINE / _source_renommee_en(module, ".gitignore")).read_text(encoding="utf-8")
+    fichier = _gitignore_a_controler(module)
+    if fichier is None:
+        pytest.skip("sdist déplié : ni outillage de publication, ni .gitignore à contrôler.")
+    contenu = fichier.read_text(encoding="utf-8")
     for motif in (".venv/", "__pycache__/", "dist/", "build/", "*.egg-info/", "sorties/"):
         assert motif in contenu, f"{motif} absent du `.gitignore` de la vitrine."
 
