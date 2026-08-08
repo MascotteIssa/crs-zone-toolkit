@@ -55,11 +55,11 @@ def test_maquette_cli_ux_section2_mono_fuseau(qc_profile, qc_grid) -> None:
     lignes = _rendu(result, qc_profile, couche="hydro", n_entites=len(pts), geographique=True)
 
     version = crs_zone_toolkit.__version__
-    assert lignes[0].startswith("Analyse CRS — profil Québec (qc)")
+    assert lignes[0].startswith("Analyse CRS : profil Québec (qc)")
     assert lignes[0].rstrip().endswith(f"crszone {version}")
     assert set(lignes[1]) == {"─"} and len(lignes[1]) == 80  # filet pleine largeur
     assert lignes[2].startswith("Couche      hydro.gpkg (20 entités, points)")
-    assert lignes[3] == "CRS déclaré EPSG:4326 — WGS 84 (géographique)"
+    assert lignes[3] == "CRS déclaré EPSG:4326, WGS 84 (géographique)"
     assert lignes[4].startswith("Emprise     ")
 
     titre = next(
@@ -141,11 +141,11 @@ def test_maquette_cli_ux_section5_apply_auto_resume_abrege(qc_profile, qc_grid) 
     )
 
     version = crs_zone_toolkit.__version__
-    assert lignes[0].startswith("Analyse CRS — profil Québec (qc)")
+    assert lignes[0].startswith("Analyse CRS : profil Québec (qc)")
     assert lignes[0].rstrip().endswith(f"crszone {version}")
     assert set(lignes[1]) == {"─"} and len(lignes[1]) == 80  # filet pleine largeur
     assert lignes[2].startswith("Couche      hydro.gpkg (20 entités, points)")
-    assert lignes[3] == "CRS déclaré EPSG:4326 — WGS 84 (géographique)"
+    assert lignes[3] == "CRS déclaré EPSG:4326, WGS 84 (géographique)"
     assert lignes[4].startswith("Emprise     ")
 
     assert not any(ligne.startswith("Répartition par fuseau MTM") for ligne in lignes)

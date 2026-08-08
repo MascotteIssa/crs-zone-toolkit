@@ -1,4 +1,4 @@
-"""Rendu Rich des écrans CLI (aucune logique métier — présentation seule).
+"""Rendu Rich des écrans CLI (aucune logique métier, présentation seule).
 
 Toutes les chaînes proviennent de core.messages ; ce module ne fait que les
 disposer avec Rich. Les maquettes exactes sont dans docs/CLI_UX.md.
@@ -36,7 +36,7 @@ def _ligne(console: Console, texte: str, *, tete: str = "", glyphe: str = "") ->
             console.print(suite)
             continue
         # Jeton insécable plus long que la console (un chemin de fichier) :
-        # `envelopper` le laisse entier exprès — coupé, il n'est plus copiable.
+        # `envelopper` le laisse entier exprès : coupé, il n'est plus copiable.
         # Rich le coupera donc quand même, mais `Padding` lui fait garder le
         # retrait au lieu de le renvoyer en colonne 0, qui est tout le sujet de N18.
         console.print(Padding(Text(suite.lstrip()), (0, 0, 0, len(tete))))
@@ -48,7 +48,7 @@ def message(console: Console, texte: str) -> None:
 
 
 def erreur(console: Console, texte: str) -> None:
-    """Ligne d'erreur « ✗ … » — nommée par N18, qui l'avait relevée débordante."""
+    """Ligne d'erreur « ✗ … », nommée par N18, qui l'avait relevée débordante."""
     _ligne(console, texte, tete="✗ ", glyphe="[red]✗[/red] ")
 
 
@@ -84,15 +84,15 @@ def resume_analyse(
 
     `chemin_rapport` est optionnel : `apply` n'écrit aucun rapport HTML (seule `analyze`
     en écrit un, cf. `cli.py`) ; quand il vaut `None`, la ligne « Rapport détaillé » est
-    omise (DT-20 n°5) — la ligne « Pour appliquer » qui suit reste affichée.
+    omise (DT-20 n°5) ; la ligne « Pour appliquer » qui suit reste affichée.
 
     `suggerer_apply` : la ligne « Pour appliquer : crszone apply … » ne s'adresse
-    qu'au lecteur d'une **analyse**. `apply` la passe à False — elle y proposait la
+    qu'au lecteur d'une **analyse**. `apply` la passe à False : elle y proposait la
     commande en cours (N2, DT-29).
 
     `famille_cible` (« csrs »/« nad83 ») vient de l'appelant (`target_family(result.famille)`,
     importé localement dans `cli.py`) : ce module ne doit charger ni `geopandas` ni `pyproj`
-    (finitions revue B (e)) — seul le libellé est résolu ici, via `msg.FAMILLE_LIBELLE`.
+    (finitions revue B (e)) ; seul le libellé est résolu ici, via `msg.FAMILLE_LIBELLE`.
     """
     reco = result.recommandation
     entete = Table.grid(expand=True)  # titre à gauche, version à droite (CLI_UX §2)
@@ -127,7 +127,7 @@ def resume_analyse(
                 [(zp.zone, zp.part * 100, mc_par_zone[zp.zone]) for zp in result.zones_traversees]
             ):
                 console.print(ligne)
-        else:  # 100 % hors profil — un titre sans ligne se lit comme un bug (DT-22)
+        else:  # 100 % hors profil : un titre sans ligne se lit comme un bug (DT-22)
             console.print(f"  {msg.analyse_repartition_vide()}")
         console.print()
         n_echantillons = int(result.parametres.get("n_echantillons_effectif", 0))
@@ -148,7 +148,7 @@ def resume_analyse(
     ligne_datum = msg.analyse_ligne_datum(result.famille, reco.cible_epsg, action=reco.action)
     marque = msg.marque_datum(result.famille, famille_cible)
     glyphe = "[green]✓[/green]" if marque == msg.MARQUE_DATUM_PRESERVE else "[yellow]⚠[/yellow]"
-    # tête de 4 caractères : « ␣␣ » + glyphe + « ␣ » — seule sa LARGEUR compte,
+    # tête de 4 caractères : « ␣␣ » + glyphe + « ␣ » ; seule sa LARGEUR compte,
     # le glyphe balisé la remplace sur la première ligne.
     _ligne(console, ligne_datum, tete="    ", glyphe=f"  {glyphe} ")
     note_datum = msg.analyse_note_datum(result.famille)
@@ -170,7 +170,7 @@ def resume_analyse(
             glyphe="[green]✓[/green] ",
         )
     # N2 (DT-29) : `Pour appliquer : crszone apply <couche>` s'affichait DANS
-    # `apply` lui-même — l'outil proposait la commande en cours. Elle ne
+    # `apply` lui-même : l'outil proposait la commande en cours. Elle ne
     # s'adresse qu'au lecteur d'une ANALYSE, et seulement s'il y a quelque
     # chose à appliquer (DT-22 : jamais quand `action == "aucune"`).
     if suggerer_apply and reco.action != "aucune":
@@ -193,7 +193,7 @@ def rappel_hors_seuil(console: Console, valeur_ppm: float) -> None:
     """Rappel affiché après le choix `[2]` si le fuseau dépasse le seuil (CLI_UX §4).
 
     `valeur_ppm` : la valeur qui franchit réellement le seuil (DT-03), pas forcément
-    `max_ppm` — voir `messages.apply_hors_seuil`.
+    `max_ppm`, voir `messages.apply_hors_seuil`.
     """
     console.print(f"  [yellow]⚠[/yellow] {msg.apply_hors_seuil(valeur_ppm)}")
 

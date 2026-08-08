@@ -44,10 +44,10 @@ limite du Québec et le profil géodésique voyagent **dans le paquet**.
 <!-- extrait:debut -->
 ```console
 $ crszone analyze regio_s.shp --region qc
-Analyse CRS — profil Québec (qc)                                                      crszone 0.1.0
+Analyse CRS : profil Québec (qc)                                                      crszone 0.1.0
 ───────────────────────────────────────────────────────────────────────────────────────────────────
 Couche      regio_s.shp (21 entités, polygones)
-CRS déclaré EPSG:4269 — NAD83 (géographique)
+CRS déclaré EPSG:4269, NAD83 (géographique)
 Emprise     79,77°O → 56,93°O · 44,99°N → 62,58°N
 
 Répartition par fuseau MTM (part de la surface totale)
@@ -71,7 +71,7 @@ Distorsion mesurée (187 points d'échantillonnage)
   Lambert est la projection unique la moins déformée (7458 ppm max). Découpage disponible en
   alternative.
   ✓ Datum : entrée NAD83 d'origine → famille préservée (EPSG:32198).
-    Note : NAD83(CSRS) est le standard actuel des données québécoises — écart ≈ 1 m.
+    Note : NAD83(CSRS) est le standard actuel des données québécoises (écart ≈ 1 m).
 
   Alternative : découpage par fuseau (6 sorties, entités affectées au fuseau majoritaire).
 
@@ -85,16 +85,16 @@ Puis, quand vous êtes d'accord :
 <!-- apply:debut -->
 ```console
 $ crszone apply montreal.gpkg --out sorties --auto
-Analyse CRS — profil Québec (qc)                                                      crszone 0.1.0
+Analyse CRS : profil Québec (qc)                                                      crszone 0.1.0
 ───────────────────────────────────────────────────────────────────────────────────────────────────
 Couche      montreal.gpkg (1 entité, polygones)
-CRS déclaré EPSG:4269 — NAD83 (géographique)
+CRS déclaré EPSG:4269, NAD83 (géographique)
 Emprise     74,00°O → 73,47°O · 45,39°N → 45,71°N
 
 → Recommandation : reprojeter vers MTM fuseau 8 (EPSG:32188, NAD83 d'origine)
   Motif : Les données tiennent dans un seul fuseau (MTM 8).
   ✓ Datum : entrée NAD83 d'origine → famille préservée (EPSG:32188).
-    Note : NAD83(CSRS) est le standard actuel des données québécoises — écart ≈ 1 m.
+    Note : NAD83(CSRS) est le standard actuel des données québécoises (écart ≈ 1 m).
 
 Mode --auto : application de la recommandation (MTM fuseau 8, EPSG:32188).
 ✓ Sortie   : sorties\montreal_epsg32188.gpkg (EPSG:32188, 1 entité)

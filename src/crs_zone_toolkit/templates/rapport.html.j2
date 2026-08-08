@@ -1,5 +1,5 @@
 <!-- ============================================================
-  CRS Zone Toolkit — rapport d'analyse (SPEC §7)
+  CRS Zone Toolkit : rapport d'analyse (SPEC §7)
   Rendu premium commutable clair/sombre (validé en maquette 2026-07-17) :
   verdict en héros, distorsion en échelle divergente centrée sur 0 ppm.
   Fichier auto-porté : CSS + JS inline, carte matplotlib en PNG base64,
@@ -9,7 +9,7 @@
 <!doctype html><html lang="fr">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analyse CRS — {{ couche }}</title>
+<title>Analyse CRS : {{ couche }}</title>
 <script>
 /* Pose le thème AVANT le premier rendu (pas de flash) : choix mémorisé, sinon réglage de l'OS. */
 (function(){var r=document.documentElement,K='crszone-theme',s=null;try{s=localStorage.getItem(K);}catch(e){}var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)');r.setAttribute('data-theme',s||(m&&m.matches?'dark':'light'));})();
@@ -123,6 +123,7 @@
   .fz-val{ text-align:right; font-size:13.5px; font-weight:600; } .fz.z0{ opacity:.5; }
 
   .d-note{ color:var(--ink2); font-size:13px; margin:2px 0 16px; max-width:70ch; }
+  .d-sub{ display:block; color:var(--ink); font-weight:650; margin-bottom:3px; }
   .d-row{ padding:12px 0 16px; border-top:1px solid var(--line); } .d-row:first-of-type{ border-top:none; }
   .d-head{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
   .d-nom{ font-weight:650; font-size:14px; }
@@ -237,9 +238,9 @@
     </div>
 
     <div class="sec"><span class="n">03</span><h2>Distorsion mesurée</h2><span class="rule"></span></div>
-    <p class="d-note"><b>Ce qui est mesuré.</b> Aucune projection ne conserve toutes les distances : en chaque point, elle multiplie les longueurs par un <i>facteur d'échelle</i> légèrement différent de 1. On exprime cet écart en <b>ppm</b> (parties par million) : 0 ppm signifie qu'à cet endroit la carte respecte les distances du terrain, et <b>100 ppm valent 10 cm par kilomètre</b>.</p>
-    <p class="d-note"><b>Ce que dit le signe.</b> Une valeur <b>négative</b> signifie que les distances lues sur la carte sont <b>plus courtes</b> que sur le terrain — une <i>compression</i>. Une valeur <b>positive</b>, <b>plus longues</b> — une <i>dilatation</i>. C'est pour cela que l'échelle ci-dessous est <b>centrée sur 0</b> : elle s'écarte des deux côtés, et la bande marque la tolérance de ±{{ seuil_ppm }} ppm.</p>
-    <p class="d-note"><b>Comment.</b> Facteur d'échelle exact calculé en {{ p.n_echantillons }} points d'échantillonnage (<code>pyproj.get_factors()</code>). Les projections comparées ici sont <i>conformes</i> — Mercator transverse pour les fuseaux MTM, conique conforme pour le Québec Lambert : en un point donné, le facteur ne dépend pas de la direction, un seul nombre suffit donc à le décrire.</p>
+    <p class="d-note"><b class="d-sub">Ce qui est mesuré</b>Aucune projection ne conserve toutes les distances : en chaque point, elle multiplie les longueurs par un <i>facteur d'échelle</i> légèrement différent de 1. On exprime cet écart en <b>ppm</b> (parties par million) : 0 ppm signifie qu'à cet endroit la carte respecte les distances du terrain, et <b>100 ppm valent 10 cm par kilomètre</b>.</p>
+    <p class="d-note"><b class="d-sub">Ce que dit le signe</b>Une valeur <b>négative</b> signifie que les distances lues sur la carte sont <b>plus courtes</b> que sur le terrain (une <i>compression</i>). Une valeur <b>positive</b>, <b>plus longues</b> (une <i>dilatation</i>). C'est pour cela que l'échelle ci-dessous est <b>centrée sur 0</b> : elle s'écarte des deux côtés, et la bande marque la tolérance de ±{{ seuil_ppm }} ppm.</p>
+    <p class="d-note"><b class="d-sub">Comment c'est calculé</b>Facteur d'échelle exact calculé en {{ p.n_echantillons }} points d'échantillonnage (<code>pyproj.get_factors()</code>). Les projections comparées ici sont <i>conformes</i> (Mercator transverse pour les fuseaux MTM, conique conforme pour le Québec Lambert) : en un point donné, le facteur ne dépend pas de la direction, un seul nombre suffit donc à le décrire.</p>
     {% for d in distorsions %}
     <div class="d-row">
       <div class="d-head">
@@ -288,8 +289,8 @@
   </div>
 
   <footer>
-    <p>Généré par <b>crszone</b> {{ version }} (crs-zone-toolkit) le {{ genere_le }} — rapport auto-porté, aucune ressource externe, imprimable (Ctrl+P).</p>
-    <p>Grille des fuseaux : MRNF, <i>Découpages administratifs</i>, Données Québec (CC-BY 4.0). Codes EPSG : registre epsg.org. Ce rapport recommande, l'utilisateur décide — décision consignée au journal (<code>*_journal.json</code>).</p>
+    <p>Généré par <b>crszone</b> {{ version }} (crs-zone-toolkit) le {{ genere_le }} ; rapport auto-porté, aucune ressource externe, imprimable (Ctrl+P).</p>
+    <p>Grille des fuseaux : MRNF, <i>Découpages administratifs</i>, Données Québec (CC-BY 4.0). Codes EPSG : registre epsg.org. Ce rapport recommande, l'utilisateur décide ; décision consignée au journal (<code>*_journal.json</code>).</p>
   </footer>
 
 </div></div>

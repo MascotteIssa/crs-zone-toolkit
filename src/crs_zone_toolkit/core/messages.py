@@ -1,6 +1,6 @@
 """Toutes les chaînes destinées à l'utilisateur (français), regroupées.
 
-Règle : aucun texte utilisateur en dur ailleurs (feuille_de_route.md §5 — i18n V3).
+Règle : aucun texte utilisateur en dur ailleurs (feuille_de_route.md §5, i18n V3).
 Le ton et le vocabulaire suivent docs/CLI_UX.md §1 (« fuseau », « famille de
 datum », jamais de verdict sec).
 """
@@ -73,12 +73,12 @@ NAD27_NTV2 = (
 )
 # N21 : cette note suivait la ligne « Datum : … famille préservée » en la
 # répétant mot pour mot ; seule sa fin apportait quelque chose. Réduite à ce
-# qu'elle ajoute, et complétée de l'ordre de grandeur — c'est ce mètre qui rend
+# qu'elle ajoute, et complétée de l'ordre de grandeur : c'est ce mètre qui rend
 # le conseil actionnable, et le rapport HTML le donnait déjà (`NOTE_DATUM`).
 # Sa formulation n'a plus de coût de contrat : depuis DT-26 elle ne transite
 # ni par le JSON ni par le rapport.
 CSRS_STANDARD_ACTUEL = (
-    "Note : NAD83(CSRS) est le standard actuel des données québécoises — écart ≈ 1 m."
+    "Note : NAD83(CSRS) est le standard actuel des données québécoises (écart ≈ 1 m)."
 )
 
 # ── DT-26 : le marqueur signale ce qui BOUGE, pas ce qui reste ────────────
@@ -92,7 +92,7 @@ MARQUE_DATUM_CHANGE = "change"
 
 
 def marque_datum(famille: str, famille_cible: str) -> str:
-    """Nature de la ligne « Datum : » — préservation ou changement de famille.
+    """Nature de la ligne « Datum : » (préservation ou changement de famille).
 
     Renvoie une **valeur symbolique**, pas un caractère : le choix du glyphe et
     de la couleur appartient à `affichage` (ce module reste sans balisage Rich).
@@ -105,7 +105,7 @@ def analyse_note_datum(famille: str) -> str | None:
 
     « NAD83(CSRS) est le standard actuel » est un **conseil**, pas une alerte :
     il ne signale aucun risque, il informe. D'où sa sortie des avertissements
-    (DT-26). La chaîne elle-même est conservée telle quelle — elle transite par
+    (DT-26). La chaîne elle-même est conservée telle quelle ; elle transite par
     le rapport HTML validé le 17/07 (divergence DT-20 (3)).
     """
     return CSRS_STANDARD_ACTUEL if famille == "nad83" else None
@@ -124,7 +124,7 @@ def envelopper(texte: str, largeur: int, tete: str) -> list[str]:
     `tete` est le préfixe **en clair** de la première ligne (`"  "`, `"  ⚠ "`,
     `"→ "`…). Les suivantes reçoivent autant d'espaces : l'alignement se fait
     sous le texte, jamais sous le glyphe. L'appelant réapplique ensuite le
-    balisage Rich sur le glyphe — ce module reste sans balisage.
+    balisage Rich sur le glyphe ; ce module reste sans balisage.
 
     `break_long_words=False` : un chemin de fichier coupé en deux n'est plus
     copiable. Mieux vaut le laisser déborder (le terminal l'enveloppera comme
@@ -164,7 +164,7 @@ def libelle_candidat_fuseau(zone: int, *, multi_fuseaux: bool) -> str:
     """Libellé du candidat « fuseau » dans le tableau de distorsion (CLI_UX §3).
 
     Le suffixe « (tout) » dit que la distorsion de ce fuseau est mesurée sur
-    **toute** la couche, y compris ses parts situées **hors de ce fuseau** — par
+    **toute** la couche, y compris ses parts situées **hors de ce fuseau**, par
     opposition au découpage, où chaque morceau serait mesuré dans le sien. Sans
     lui, un chiffre comme 14 784 ppm se lit comme une erreur (DT-20 (1)).
 
@@ -196,7 +196,7 @@ def motif_hors_profil_total() -> str:
 def motif_zone_moins_deformee(zone: int, ppm: float, seuil: float, *, decoupage_utile: bool) -> str:
     """Motif « meilleure projection unique, mais au-delà de la tolérance ».
 
-    `decoupage_utile` — vrai seulement si le découpage produirait **plusieurs**
+    `decoupage_utile` : vrai seulement si le découpage produirait **plusieurs**
     fichiers. Sinon, promettre qu'il « garde chaque morceau sous le seuil » est
     **faux** : toutes les entités relevant majoritairement d'un seul fuseau, le
     découpage rendrait un fichier unique, à la même distorsion (N23). Mesuré sur
@@ -319,7 +319,7 @@ NOTE_DATUM = {
     ),
     "nad27": (
         "La couche est en NAD27, un datum historique. Passer à NAD83(CSRS) exige une "
-        "transformation de datum par grille NTv2 — jamais appliquée silencieusement."
+        "transformation de datum par grille NTv2, jamais appliquée silencieusement."
     ),
     "csrs": (
         "La couche est en NAD83(CSRS), le standard géodésique actuel du Québec : "
@@ -339,7 +339,7 @@ NOTE_DATUM_DEFAUT = NOTE_DATUM["autre"]
 
 
 # ── CLI (Jalon J5) ─────────────────────────────────────────────────────────
-CLI_AIDE = "crszone — analyse, recommandation et reprojection CRS pour le Québec (MTM / Lambert)."
+CLI_AIDE = "crszone : analyse, recommandation et reprojection CRS pour le Québec (MTM / Lambert)."
 CLI_AIDE_REGION = "Profil de région à utiliser (défaut : qc)."
 CLI_AIDE_ANALYZE = (
     "Analyser une couche : fuseaux traversés, distorsion, recommandation (lecture seule)."
@@ -349,7 +349,7 @@ CLI_AIDE_GRID = "Générer la grille des fuseaux MTM du profil."
 
 
 def grille_entete() -> str:
-    return "Grille des fuseaux MTM — profil Québec (qc)"
+    return "Grille des fuseaux MTM : profil Québec (qc)"
 
 
 def grille_ligne_decoupe(clip: bool) -> str:
@@ -365,25 +365,25 @@ def grille_ligne_ecrite(chemin: str, n: int, attributs: tuple[str, ...]) -> str:
     return f"{chemin} ({fr_accord(n, 'entité')}, attributs : {', '.join(attributs)})"
 
 
-# ── CLI analyze — résumé terminal (CLI_UX §2/§3, Jalon J5) ─────────────────
+# ── CLI analyze : résumé terminal (CLI_UX §2/§3, Jalon J5) ──────────────────
 
 
 def fr_nombre(x: float, dec: int = 1) -> str:
     """Nombre en notation française : milliers par espace (U+0020), virgule décimale.
 
-    Point de vérité unique du format numérique FR (DT-05) — report._fr,
+    Point de vérité unique du format numérique FR (DT-05) ; report._fr,
     _fr_entier et _fr_deg délèguent ici.
     """
     return f"{x:,.{dec}f}".replace(",", " ").replace(".", ",")
 
 
 def _fr_entier(n: int) -> str:
-    """Entier avec espace de milliers (CLI_UX §2 : « 1 842 ») — délègue à fr_nombre (DT-05)."""
+    """Entier avec espace de milliers (CLI_UX §2 : « 1 842 »), délègue à fr_nombre (DT-05)."""
     return fr_nombre(n, dec=0)
 
 
 def _fr_deg(valeur: float) -> str:
-    """Valeur absolue à 2 décimales, virgule française (ligne Emprise) — délègue (DT-05)."""
+    """Valeur absolue à 2 décimales, virgule française (ligne Emprise), délègue (DT-05)."""
     return fr_nombre(abs(valeur), dec=2)
 
 
@@ -391,8 +391,8 @@ _TYPE_GEOMETRIE_LIBELLE = {"point": "points", "line": "lignes", "polygon": "poly
 
 
 def analyse_entete(profil_nom: str, profil_id: str) -> str:
-    """Titre du résumé (CLI_UX §2/§3 : « Analyse CRS — profil Québec (qc) »)."""
-    return f"Analyse CRS — profil {profil_nom} ({profil_id})"
+    """Titre du résumé (CLI_UX §2/§3 : « Analyse CRS : profil Québec (qc) »)."""
+    return f"Analyse CRS : profil {profil_nom} ({profil_id})"
 
 
 def analyse_version(version: str) -> str:
@@ -401,7 +401,7 @@ def analyse_version(version: str) -> str:
 
 
 def fr_accord(n: int, singulier: str, pluriel: str | None = None) -> str:
-    """« 1 entité » / « 21 entités » — en français seul **1** est singulier (0 est pluriel).
+    """« 1 entité » / « 21 entités » ; en français seul **1** est singulier (0 est pluriel).
 
     Le nombre lui-même passe par `fr_nombre` (DT-05, point de vérité unique du
     format numérique) ; cette fonction ne décide que du mot.
@@ -411,23 +411,23 @@ def fr_accord(n: int, singulier: str, pluriel: str | None = None) -> str:
 
 
 def analyse_ligne_couche(nom: str, type_geometrie: str, n_entites: int) -> str:
-    """Ligne « Couche … (n entités, type) » — effectif ajouté (DT-02)."""
+    """Ligne « Couche … (n entités, type) » : effectif ajouté (DT-02)."""
     libelle_type = _TYPE_GEOMETRIE_LIBELLE.get(type_geometrie, type_geometrie)
     return f"Couche      {nom} ({fr_accord(n_entites, 'entité')}, {libelle_type})"
 
 
 def analyse_ligne_crs_declare(epsg: int | None, etiquette: str, *, geographique: bool) -> str:
-    """Ligne « CRS déclaré … » — suffixe « (géographique) » quand le CRS n'est pas projeté
+    """Ligne « CRS déclaré … » : suffixe « (géographique) » quand le CRS n'est pas projeté
     (CLI_UX §2/§3 : le lecteur doit voir immédiatement qu'aucune mesure métrique n'est possible)."""
     suffixe = " (géographique)" if geographique else ""
     if epsg is not None:
-        return f"CRS déclaré EPSG:{epsg} — {etiquette}{suffixe}"
+        return f"CRS déclaré EPSG:{epsg}, {etiquette}{suffixe}"
     # DT-26 (N13) : sans code EPSG résolu, l'écran enchaînait « CRS déclaré
     # unknown » puis « Datum : entrée WGS 84 → … ». Les deux sont exacts et
-    # parlent de niveaux différents — le CODE du CRS est irrésoluble, son DATUM
-    # est lisible — mais rien ne le disait, et un lecteur peut y voir une
+    # parlent de niveaux différents : le CODE du CRS est irrésoluble, son DATUM
+    # est lisible, mais rien ne le disait, et un lecteur peut y voir une
     # contradiction. Le renvoi tient sur la ligne (N18 : pas de débordement).
-    return f"CRS déclaré {etiquette}{suffixe} — aucun code EPSG résolu, datum ci-dessous"
+    return f"CRS déclaré {etiquette}{suffixe} ; aucun code EPSG résolu, datum ci-dessous"
 
 
 def analyse_ligne_emprise(lon_min: float, lat_min: float, lon_max: float, lat_max: float) -> str:
@@ -463,9 +463,9 @@ def analyse_repartition_vide() -> str:
 
     Formulée dans les termes **de la section** (l'emprise contre la grille), et
     non comme un second énoncé du verdict : la ligne « Recommandation : aucune »
-    dit déjà ce dernier, deux lignes plus bas — vérifié sur la sortie réelle.
+    dit déjà ce dernier, deux lignes plus bas ; vérifié sur la sortie réelle.
     """
-    return "Aucun fuseau traversé — l'emprise tombe hors de la grille du profil."
+    return "Aucun fuseau traversé : l'emprise tombe hors de la grille du profil."
 
 
 def analyse_distorsion_titre(n_echantillons_effectif: int) -> str:
@@ -488,13 +488,13 @@ def analyse_bloc_fuseaux(lignes: Sequence[tuple[int, float, float]]) -> list[str
 
     `lignes` : `(zone, part_pct, meridien_central)`. Le numéro de zone est paddé
     sur la largeur du plus grand numéro présent dans le bloc, pour que les
-    barres commencent toutes à la même colonne — le Québec a dix fuseaux, et
+    barres commencent toutes à la même colonne ; le Québec a dix fuseaux, et
     « Fuseau 10 » ne doit pas décaler la barre par rapport à « Fuseau 7 »
     (revue B (f), cas réel sur toute couche provinciale). Sortie caractère
     pour caractère identique à l'ancienne `analyse_ligne_fuseau` quand toutes
     les zones du bloc sont à un chiffre.
 
-    Le méridien central vient du profil injecté — aucune valeur géodésique ici (TP-40).
+    Le méridien central vient du profil injecté ; aucune valeur géodésique ici (TP-40).
     """
     largeur_zone = max((len(str(zone)) for zone, _, _ in lignes), default=1)
     resultat = []
@@ -509,7 +509,7 @@ def analyse_bloc_fuseaux(lignes: Sequence[tuple[int, float, float]]) -> list[str
 
 def _ppm_affiche(valeur: float) -> str:
     """Valeur ppm signée pour le terminal : « +41 ppm », « −100 ppm » (U+2212, CLI_UX §1)."""
-    # N7 : le signe était choisi sur la valeur BRUTE, puis l'arrondi l'effaçait —
+    # N7 : le signe était choisi sur la valeur BRUTE, puis l'arrondi l'effaçait,
     # d'où le « −0 ppm » relevé au test. On arrondit d'abord, on signe ensuite ;
     # un zéro n'a pas de signe.
     arrondi = round(valeur)
@@ -563,10 +563,10 @@ def analyse_recommandation(
     """Ligne « → Recommandation … » (CLI_UX §2/§3).
 
     `action == "aucune"` : 100 % hors profil, `cible_epsg` vaut la sentinelle 0
-    (SPEC §8) — on n'affiche jamais « EPSG:0 », qui n'est pas un code valide.
+    (SPEC §8) : on n'affiche jamais « EPSG:0 », qui n'est pas un code valide.
     """
     if action == "aucune":
-        return "Recommandation : aucune — toutes les données tombent hors du profil."
+        return "Recommandation : aucune (toutes les données tombent hors du profil)."
     return (
         f"Recommandation : reprojeter vers {cible_libelle} (EPSG:{cible_epsg}, {famille_libelle})"
     )
@@ -581,7 +581,7 @@ def analyse_ligne_datum(famille: str, cible_epsg: int, *, action: str) -> str:
     §3 : NAD83 → famille préservée). Couvre wgs84/nad83/csrs/nad27/autre.
 
     `action == "aucune"` : 100 % hors profil, `cible_epsg` vaut la sentinelle 0
-    (SPEC §8) — **aucune branche ne nomme alors de code cible** (DT-22). La
+    (SPEC §8) : **aucune branche ne nomme alors de code cible** (DT-22). La
     famille reste identifiée et dite : c'est une information juste, et la seule
     que l'écran puisse encore donner. Les branches `wgs84` et `csrs` n'ont
     jamais nommé de code : les trois autres prennent ici la même forme.
@@ -615,16 +615,16 @@ def apply_mode_auto(cible_libelle: str, cible_epsg: int, *, action: str) -> str:
     relisant `decision.origine` dans le journal.
 
     `action == "aucune"` : aucune cible n'existe, et la sentinelle `cible_epsg`
-    vaut 0 — la ligne ne nomme alors **aucun** code, même leçon que DT-22.
+    vaut 0 : la ligne ne nomme alors **aucun** code, même leçon que DT-22.
     """
     if action == "aucune":
-        return "Mode --auto : aucune recommandation à appliquer — aucune sortie écrite."
+        return "Mode --auto : aucune recommandation à appliquer (aucune sortie écrite)."
     return f"Mode --auto : application de la recommandation ({cible_libelle}, EPSG:{cible_epsg})."
 
 
 def analyse_ligne_alternative_split(n_sorties: int) -> str:
     """Ligne « Alternative : découpage par fuseau … » (CLI_UX §3), condensée depuis
-    `alt_split_desc` — émise seulement si `recommandation.alternatives` contient un
+    `alt_split_desc` : émise seulement si `recommandation.alternatives` contient un
     découpage (`action == "split"`)."""
     return (
         f"Alternative : découpage par fuseau ({fr_accord(n_sorties, 'sortie')}, entités "
@@ -667,7 +667,7 @@ def apply_annule(chemin_rapport: Path | None) -> str:
     donnée écrite » resterait vrai tout en passant sous silence le fichier qui
     vient d'être produit.
 
-    `None` — hors du périmètre où `apply` écrit un rapport : message inchangé.
+    `None`, hors du périmètre où `apply` écrit un rapport : message inchangé.
     """
     if chemin_rapport is None:
         return APPLY_ANNULE
@@ -719,30 +719,30 @@ def apply_ligne_pipeline(pipeline: str) -> str:
 def apply_menu(result: AnalysisResult) -> list[str]:
     """Lignes du menu interactif (CLI_UX §4). result : AnalysisResult."""
     reco = result.recommandation
-    # `[2]` propose de reprojeter vers n'importe quel fuseau TRAVERSÉ — c'est bien
+    # `[2]` propose de reprojeter vers n'importe quel fuseau TRAVERSÉ, c'est bien
     # la bonne liste ici.
     zones = ", ".join(str(z.zone) for z in result.zones_traversees)
     # `[3]` annonce des FICHIERS : il lit le même `alternatives[split].zones` que la
     # ligne « Alternative » du résumé (DT-25). Les deux paraissent sur le MÊME écran
-    # de décision — les laisser compter chacun de leur côté, c'était les laisser se
+    # de décision ; les laisser compter chacun de leur côté, c'était les laisser se
     # contredire (`regio_s` : 6 contre 9).
     alt_split = next((a for a in reco.alternatives if a.get("action") == "split"), None)
     lignes = [
         # N2 bis : le résumé et le menu se touchaient, sur un écran de DÉCISION.
         "",
         "Que voulez-vous faire ?",
-        f"  [1] Appliquer la recommandation — {reco.cible_libelle} (EPSG:{reco.cible_epsg})",
+        f"  [1] Appliquer la recommandation : {reco.cible_libelle} (EPSG:{reco.cible_epsg})",
         f"  [2] Reprojeter vers un fuseau MTM unique (préciser : {zones})",
     ]
     # N20 : `[3]` n'est proposé que si le découpage produit plusieurs fichiers.
     # Sur une sortie unique il est identique à `[2]` sur le fuseau majoritaire :
     # du bruit sur un écran de décision. L'absence d'alternative dans la
-    # recommandation est la source de vérité — menu et résumé ne peuvent pas
+    # recommandation est la source de vérité ; menu et résumé ne peuvent pas
     # diverger (leçon de la miss de DT-25).
     if alt_split is not None:
         n = len(alt_split["zones"])
         lignes.append(
-            f"  [3] Découper par fuseau MTM — affectation majoritaire, {fr_accord(n, 'sortie')}"
+            f"  [3] Découper par fuseau MTM : affectation majoritaire, {fr_accord(n, 'sortie')}"
         )
     lignes.append("  [0] Annuler (relire le rapport avant de décider)")
     return lignes
@@ -755,7 +755,7 @@ APPLY_INVITE_FUSEAU = "Quel fuseau ?"
 def apply_hors_seuil(valeur_ppm: float) -> str:
     """Rappel affiché quand le fuseau choisi dépasse le seuil de distorsion (CLI_UX §4).
 
-    `valeur_ppm` est la valeur qui FRANCHIT réellement le seuil — soit le min, soit
+    `valeur_ppm` est la valeur qui FRANCHIT réellement le seuil : soit le min, soit
     le max de la distorsion mesurée, celui dont la valeur absolue est la plus grande
     (DT-03 : l'ancien code affichait toujours `max_ppm`, même quand c'était le min
     qui dépassait)."""

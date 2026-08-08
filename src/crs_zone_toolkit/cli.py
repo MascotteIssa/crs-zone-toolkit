@@ -1,4 +1,4 @@
-"""Adaptateur CLI (Typer + Rich) — sous-commandes analyze / apply / grid.
+"""Adaptateur CLI (Typer + Rich) : sous-commandes analyze / apply / grid.
 
 Couche mince (ARCHITECTURE §2-§3) : composition + routage + présentation, aucune
 logique métier. Traduit les exceptions typées du noyau en codes de sortie (SPEC
@@ -211,10 +211,10 @@ def _rappel_si_hors_seuil(result: AnalysisResult, fuseau: int, humain: Console) 
     La distorsion n'est mesurée (analysis.py) que pour le fuseau dominant : si le
     fuseau choisi diffère, aucune donnée n'est disponible ici et on n'affiche rien
     (affichage informatif seulement, ne bloque jamais la décision consciente de
-    l'utilisateur — journalisée par ailleurs comme « choix contre recommandation »).
+    l'utilisateur ; journalisée par ailleurs comme « choix contre recommandation »).
 
-    La valeur affichée est celle qui FRANCHIT réellement le seuil — `min_ppm` ou
-    `max_ppm`, la plus grande en valeur absolue (DT-03) — pas systématiquement
+    La valeur affichée est celle qui FRANCHIT réellement le seuil : `min_ppm` ou
+    `max_ppm`, la plus grande en valeur absolue (DT-03), pas systématiquement
     `max_ppm`, qui peut être à tort le côté qui ne dépasse pas.
     """
     if not result.zones_traversees or result.zones_traversees[0].zone != fuseau:
@@ -258,7 +258,7 @@ def apply(
     ),
 ) -> None:
     with _codes_de_sortie():
-        # DT-19 : import paresseux (voie b — le brief l'autorise nommément) : un
+        # DT-19 : import paresseux (voie b, le brief l'autorise nommément) : un
         # import module-level de core.apply charge geopandas/pyproj/shapely dès
         # `crszone --help`, mesuré ~0,7 s contre ~0,07 s ; le texte d'aide reste
         # littéral, verrouillé par test_aide_apply_couvre_formats_sortie.
@@ -285,7 +285,7 @@ def apply(
         cible = Path(out_dir) if out_dir is not None else Path(couche).parent
 
         # DT-23 : le menu promet « [0] Annuler (relire le rapport avant de décider) ».
-        # La promesse n'a de sens que si le rapport existe QUAND le menu s'affiche —
+        # La promesse n'a de sens que si le rapport existe QUAND le menu s'affiche :
         # il est donc écrit ici, avant le résumé et avant la décision.
         #
         # Périmètre arbitré (protocole §9, N14) : mode interactif et `--choice split`,
@@ -308,7 +308,7 @@ def apply(
                 html, Path(couche), out_dir=cible, overwrite=True, generated_at=quand
             )
 
-        # DT-20 n°5 : SPEC §5.2 — apply « exécute l'analyse et affiche le résumé » avant
+        # DT-20 n°5 : SPEC §5.2, apply « exécute l'analyse et affiche le résumé » avant
         # la décision. `chemin_rapport` vaut None hors du périmètre ci-dessus, et
         # `affichage.resume_analyse` omet alors la ligne « Rapport détaillé ».
         affichage.resume_analyse(
@@ -325,7 +325,7 @@ def apply(
             suggerer_apply=False,
         )
 
-        if auto:  # CLI_UX §5 — le mode automatique s'annonce (DT-27, observation N4)
+        if auto:  # CLI_UX §5 : le mode automatique s'annonce (DT-27, observation N4)
             affichage.mode_auto(humain, result)
 
         decision = _resoudre_decision(result, choix=choix, zone=zone, auto=auto, humain=humain)
@@ -360,7 +360,7 @@ def grid(
 ) -> None:
     with _codes_de_sortie():
         # DT-19 : le texte d'aide reste littéral (voie b), verrouillé par
-        # test_aide_grid_couvre_formats_grille — `crs_zone_toolkit.FORMATS_GRILLE`
+        # test_aide_grid_couvre_formats_grille : `crs_zone_toolkit.FORMATS_GRILLE`
         # est un attribut déjà chargé (pas d'import lourd), donc pas de coût ici.
         if out_format not in crs_zone_toolkit.FORMATS_GRILLE:
             raise typer.BadParameter(
@@ -369,7 +369,7 @@ def grid(
 
         region = ctx.obj.region
         # DT-19 : l'extension de sortie EST le nom du format, par construction de
-        # _FORMATS_GRILLE (geojson/gpkg) — pas de correspondance à maintenir à part.
+        # _FORMATS_GRILLE (geojson/gpkg), pas de correspondance à maintenir à part.
         ext = out_format
         cible = out_path if out_path is not None else Path(f"grille_mtm_{region}.{ext}")
         chemin, n, attributs = crs_zone_toolkit._generer_grille(

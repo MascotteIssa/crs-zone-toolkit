@@ -171,7 +171,7 @@ def _crs_declare(crs_entree: dict[str, Any]) -> str:
     epsg = crs_entree.get("epsg")
     etiquette = crs_entree.get("etiquette", "")
     if epsg is not None:
-        return f"EPSG:{epsg} — {etiquette}"
+        return f"EPSG:{epsg} ({etiquette})"
     return str(etiquette)
 
 

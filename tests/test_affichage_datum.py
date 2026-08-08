@@ -95,4 +95,4 @@ def test_dt26_avec_un_code_epsg_la_ligne_est_inchangee() -> None:
     """Contre-épreuve : la mention ne concerne que le CRS sans code résolu."""
     ligne = msg.analyse_ligne_crs_declare(4326, "WGS 84", geographique=True)
 
-    assert ligne == "CRS déclaré EPSG:4326 — WGS 84 (géographique)"
+    assert ligne == "CRS déclaré EPSG:4326, WGS 84 (géographique)"
