@@ -70,6 +70,7 @@ PERIMETRE_VITRINE: tuple[str, ...] = (
     "docs/feuille_de_route.md",
     "docs/images/",
     "docs/references.md",
+    "packaging/",
     "pyproject.toml",
     "scripts/",
     "src/",

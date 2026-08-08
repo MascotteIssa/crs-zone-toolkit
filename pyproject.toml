@@ -91,6 +91,7 @@ include = [
   "/docs/calibrage",
   "/docs/feuille_de_route.md",
   "/docs/references.md",
+  "/packaging",
   "/.github",
   "/README.md",
   "/QUICKSTART.md",
