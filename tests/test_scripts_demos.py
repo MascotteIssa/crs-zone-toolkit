@@ -145,7 +145,9 @@ def test_regenerer_extrait_remplace_le_bloc(
     assert "PÉRIMÉ" not in texte
     assert texte.startswith("# Titre")  # le hors-marqueurs est préservé
     assert texte.endswith("Après.\n")
-    assert f"$ crszone analyze {couche.name}" in texte
+    # `--region` est une option GLOBALE : avant la sous-commande, sinon la
+    # commande affichée au README ne s'exécute pas (`No such option`).
+    assert f"$ crszone --region qc analyze {couche.name}" in texte
     # Aucune espace de fin : le hook pre-commit `trailing-whitespace` couvre README.md.
     bloc = texte.split(script.MARQUEUR_EXTRAIT_DEBUT, 1)[1].split(script.MARQUEUR_EXTRAIT_FIN, 1)[0]
     assert not [ligne for ligne in bloc.splitlines() if ligne != ligne.rstrip()]

@@ -1,6 +1,6 @@
 # CRS Zone Toolkit — TEST_PLAN (jeux de test et calibrage des seuils)
 
-> **Rôle du document.** Définir les jeux de données de test et les résultats attendus qui (1) valident objectivement chaque règle de `SPEC.md` et `DATA_REFERENCE.md`, (2) **calibrent** les deux seuils de la règle de décision (`part_dominante_min`, `distorsion_max_ppm`), (3) alimentent directement les tests pytest (TDD Superpowers : ces cas s'écrivent **avant** le code du moteur).
+> **Rôle du document.** Définir les jeux de données de test et les résultats attendus qui (1) valident objectivement chaque règle de `SPEC.md` et `DATA_REFERENCE.md`, (2) **calibrent** les deux seuils de la règle de décision (`part_dominante_min`, `distorsion_max_ppm`), (3) alimentent directement les tests pytest (TDD : ces cas s'écrivent **avant** le code du moteur).
 >
 > **Version :** 0.1 · **Date :** 5 juillet 2026 · **Statut :** Brouillon — à valider avant l'architecture
 >

@@ -65,7 +65,7 @@ uv run python scripts/regenerer_demos.py --quoi gif         # le plus long
 
 `--quoi extrait` remplace le contenu entre les marqueurs `<!-- extrait:debut -->`
 / `<!-- extrait:fin -->` du README par la sortie réelle de
-`crszone analyze <couche> --region <région>` (console Rich à largeur fixe,
+`crszone --region <région> analyze <couche>` (console Rich à largeur fixe,
 sans couleur — ne dépend pas de Playwright, seul lui échoue bruyamment si les
 marqueurs sont absents du README). Idempotent : deux exécutions successives ne
 changent rien (le nom du rapport HTML affiché vient d'un horodatage figé dans
@@ -89,6 +89,17 @@ explicite** (`PERIMETRE_VITRINE`, en tête de fichier) : un fichier nouveau au
 dev n'entre dans la vitrine que si on l'ajoute à cette liste. La fuite d'un
 document interne vers GitHub est ainsi impossible par construction — même
 principe que DT-19 (rendre la dérive impossible plutôt que la rattraper).
+
+Une seconde table, `RENOMMAGES_VITRINE`, publie un fichier **sous un autre
+nom**. Elle sert au `.gitignore` : les deux dépôts n'ignorent pas les mêmes
+choses, donc la vitrine reçoit le sien (`packaging/gitignore-vitrine`, copié
+sous le nom `.gitignore`) plutôt qu'une copie de celui du dev.
+
+> Corollaire pour PyPI : hatchling ajoute le `.gitignore` du dépôt au sdist
+> d'office (`force-include`, hors `include`/`exclude` — l'y exclure ne fait
+> rien). L'archive porte donc celui du dépôt **où elle est construite**, ce qui
+> confirme la règle déjà en place : `uv build` puis `twine upload` se font
+> **depuis le clone vitrine**, jamais depuis le dépôt de développement.
 
 **La vitrine ne s'édite JAMAIS à la main** : toute correction se fait au
 dépôt dev, puis se republie en relançant ce script.

@@ -92,7 +92,7 @@ Décisions V1 actées en cours de cadrage (à formaliser dans `SPEC.md`) :
 ## 7. Procédure
 
 1. Toute nouvelle idée (conversation, revue, issue GitHub) s'ajoute **ici**, dans la section correspondant à son horizon, avec sa justification.
-2. Quand une idée entre en développement, elle sort de ce document vers le plan d'implémentation (workflow Superpowers) ; à la livraison, la SPEC est mise à jour.
+2. Quand une idée entre en développement, elle sort de ce document vers un plan d'implémentation écrit, daté et revu avant tout code ; à la livraison, la SPEC est mise à jour.
 3. À chaque décision de conception V1, vérifier les **principes §1** : est-ce qu'on est en train de coder en dur quelque chose qui devra devenir un profil ?
 
 ---

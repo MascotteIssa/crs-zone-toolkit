@@ -188,6 +188,7 @@ def _contexte(
     generated_at: datetime,
     *,
     profile: RegionProfile,
+    fichier: str | None = None,
 ) -> dict[str, Any]:
     seuil = float(analysis.parametres.get("distorsion_max_ppm", 0))
     geoms, _ = _echelle_ppm([(x.min_ppm, x.max_ppm) for x in analysis.distorsions], seuil=seuil)
@@ -197,6 +198,11 @@ def _contexte(
     famille_libelle = Markup(msg.FAMILLE_LIBELLE.get(analysis.famille, msg.FAMILLE_LIBELLE_DEFAUT))
     return {
         "couche": analysis.couche,
+        # Nom de FICHIER (avec son extension), pour que la commande de
+        # reproduction du rapport soit exécutable telle quelle : `couche` est un
+        # radical (contrat JSON, SPEC §8) et ne désigne aucun fichier réel.
+        # Sans nom fourni, on retombe sur le radical — la ligne reste indicative.
+        "fichier": fichier if fichier is not None else analysis.couche,
         "region": analysis.parametres.get("region", ""),
         "profil_nom": profile.nom,
         "genere_le": generated_at.strftime("%Y-%m-%d %H:%M"),
@@ -253,10 +259,17 @@ def render_html(
     profile: RegionProfile,
     grid: gpd.GeoDataFrame,
     generated_at: datetime,
+    fichier: str | None = None,
 ) -> str:
-    """Rend le rapport HTML complet auto-porté (SPEC §7)."""
+    """Rend le rapport HTML complet auto-porté (SPEC §7).
+
+    `fichier` : nom du fichier source AVEC son extension (`Path(src).name`),
+    seulement pour la commande de reproduction imprimée en fin de rapport —
+    `AnalysisResult.couche` n'en porte que le radical. Optionnel : sans lui, la
+    commande retombe sur le radical, faute de mieux.
+    """
     carte = _carte_base64(layer, grid, profile=profile)
-    contexte = _contexte(analysis, layer, carte, generated_at, profile=profile)
+    contexte = _contexte(analysis, layer, carte, generated_at, profile=profile, fichier=fichier)
     return _env.get_template("rapport.html.j2").render(**contexte)
 
 

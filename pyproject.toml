@@ -107,6 +107,13 @@ include = [
 exclude = [
   "/tests/user_test/**",
 ]
+# Le `.gitignore` du dépôt entre dans le sdist D'OFFICE : hatchling le
+# `force-include` (`builders/sdist.py`, get_default_build_data), ce qui
+# court-circuite `include` ET `exclude` — l'y ajouter ne ferait rien. L'archive
+# porte donc le `.gitignore` du dépôt où elle est CONSTRUITE. D'où la règle de
+# publication : `uv build` puis `twine upload` **depuis le clone vitrine**, qui
+# a le sien (`RENOMMAGES_VITRINE` dans `scripts/publier_release.py`). Construit
+# depuis le dépôt de développement, le sdist emporterait celui du dev.
 
 [tool.ruff]
 line-length = 100

@@ -137,7 +137,9 @@ def analyze(
             couche, region=region, assume_crs=assume_crs
         )
         quand = datetime.now(UTC)
-        html = _report.render_html(result, layer, profile=profile, grid=grid, generated_at=quand)
+        html = _report.render_html(
+            result, layer, profile=profile, grid=grid, generated_at=quand, fichier=Path(couche).name
+        )
         dossier = report if report is not None else Path(couche).parent
         chemin_rapport = _report._ecrire(
             html, Path(couche), out_dir=dossier, overwrite=True, generated_at=quand
@@ -302,7 +304,12 @@ def apply(
 
             quand = datetime.now(UTC)
             html = _report.render_html(
-                result, layer, profile=profile, grid=grid, generated_at=quand
+                result,
+                layer,
+                profile=profile,
+                grid=grid,
+                generated_at=quand,
+                fichier=Path(couche).name,
             )
             chemin_rapport = _report._ecrire(
                 html, Path(couche), out_dir=cible, overwrite=True, generated_at=quand

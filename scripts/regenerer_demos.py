@@ -140,7 +140,12 @@ def regenerer_exemple_rapport(
 
     layer, result, profile, grid = _analyser(couche, region=region)
     html = _report.render_html(
-        result, layer, profile=profile, grid=grid, generated_at=HORODATAGE_EXEMPLE
+        result,
+        layer,
+        profile=profile,
+        grid=grid,
+        generated_at=HORODATAGE_EXEMPLE,
+        fichier=couche.name,
     )
     sortie.parent.mkdir(parents=True, exist_ok=True)
     sortie.write_text(html, encoding="utf-8")
@@ -187,11 +192,16 @@ def regenerer_extrait(
 
     tampon = io.StringIO()
     rec = RichConsole(width=LARGEUR_EXTRAIT, no_color=True, file=tampon)
-    rec.print(f"[green]$[/green] crszone analyze {couche.name} --region {region}")
+    rec.print(f"[green]$[/green] crszone --region {region} analyze {couche.name}")
 
     with tempfile.TemporaryDirectory() as tmp:
         html = _report.render_html(
-            result, layer, profile=profile, grid=grid, generated_at=HORODATAGE_EXTRAIT
+            result,
+            layer,
+            profile=profile,
+            grid=grid,
+            generated_at=HORODATAGE_EXTRAIT,
+            fichier=couche.name,
         )
         chemin_rapport = _report._ecrire(
             html, couche, out_dir=Path(tmp), overwrite=True, generated_at=HORODATAGE_EXTRAIT
@@ -474,11 +484,13 @@ def regenerer_gif(
 
     rec.print = _imprimer_et_capturer  # type: ignore[method-assign]
 
-    rec.print(f"[green]$[/green] crszone analyze {couche.name} --region {region}")
+    rec.print(f"[green]$[/green] crszone --region {region} analyze {couche.name}")
 
     with tempfile.TemporaryDirectory() as tmp:
         quand = datetime.now(UTC)
-        html = _report.render_html(result, layer, profile=profile, grid=grid, generated_at=quand)
+        html = _report.render_html(
+            result, layer, profile=profile, grid=grid, generated_at=quand, fichier=couche.name
+        )
         chemin_rapport = _report._ecrire(
             html, couche, out_dir=Path(tmp), overwrite=True, generated_at=quand
         )

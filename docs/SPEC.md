@@ -35,8 +35,10 @@ Choisir une projection métrique adaptée avant une analyse spatiale (buffers, s
 ### 4.1 Signature fonctionnelle
 
 ```
-crszone analyze COUCHE [--region qc] [--assume-crs EPSG] [--report CHEMIN] [--json [CHEMIN]] [--quiet]
+crszone [--region qc] analyze COUCHE [--assume-crs EPSG] [--report CHEMIN] [--json [CHEMIN]] [--quiet]
 ```
+
+`--region` est une option **globale** : elle se place **avant** la sous-commande (`CLI_UX.md` §9), comme dans les synopsis de `apply` (§5.1) et `grid` (§6). Placée après, elle est rejetée (`No such option: --region`).
 
 Entrée : une couche vectorielle. Sorties : résumé terminal (Rich), rapport HTML détaillé, optionnellement JSON structuré. **Aucune écriture de données géospatiales** — `analyze` est en lecture seule.
 
@@ -81,7 +83,7 @@ Toute recommandation est accompagnée de sa **justification chiffrée** (parts p
 ### 5.1 Signature fonctionnelle
 
 ```
-crszone apply COUCHE [--region qc] [--choice zone|lambert|split] [--auto] [--out DOSSIER] [--format gpkg|geojson|shp] [--assume-crs EPSG] [--json [CHEMIN]]
+crszone [--region qc] apply COUCHE [--choice zone|lambert|split] [--auto] [--out DOSSIER] [--format gpkg|geojson|shp] [--assume-crs EPSG] [--json [CHEMIN]]
 ```
 
 ### 5.2 Flux (analyser → décider → agir)
@@ -103,7 +105,7 @@ crszone apply COUCHE [--region qc] [--choice zone|lambert|split] [--auto] [--out
 ## 6. `crszone grid` — génération de la grille
 
 ```
-crszone grid [--region qc] [--out CHEMIN] [--format geojson|gpkg] [--no-clip]
+crszone [--region qc] grid [--out CHEMIN] [--format geojson|gpkg] [--no-clip]
 ```
 
 - Génère la grille des fuseaux du profil (bandes de longitudes de `DATA_REFERENCE.md` §2), **découpée sur la limite du Québec** par défaut (`--no-clip` pour les bandes complètes). Source de la limite administrative : **Découpages administratifs** du MRNF sur Données Québec, version 1/100 000, licence CC-BY 4.0 (attribution dans le README et dans les métadonnées de la grille) [REF-15].

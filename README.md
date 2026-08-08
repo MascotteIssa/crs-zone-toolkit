@@ -43,7 +43,7 @@ limite du Québec et le profil géodésique voyagent **dans le paquet**.
 
 <!-- extrait:debut -->
 ```console
-$ crszone analyze regio_s.shp --region qc
+$ crszone --region qc analyze regio_s.shp
 Analyse CRS : profil Québec (qc)                                                      crszone 0.1.0
 ───────────────────────────────────────────────────────────────────────────────────────────────────
 Couche      regio_s.shp (21 entités, polygones)

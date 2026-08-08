@@ -62,7 +62,7 @@
 ## 3. Écosystème & outillage de développement
 
 **[REF-20]** *Registre d'outillage d'un projet interne antérieur* [document interne, non publié]. (2026).
-> Décisions héritées : Superpowers, context-mode, procédure d'ajout d'outil, principe de sobriété.
+> Décisions héritées : chaîne d'outillage de développement, procédure d'ajout d'un outil, principe de sobriété.
 
 **[REF-21]** GeoPandas development team. (s. d.). *Changelog* [documentation logicielle]. GeoPandas. Consulté le 5 juillet 2026, à l'adresse https://geopandas.org/en/stable/docs/changelog.html
 > pyogrio moteur d'E/S par défaut depuis GeoPandas 1.0 (remplace Fiona) — choix du registre outillage §5.1. *Pointer la section 1.0 lors de la vérification.*

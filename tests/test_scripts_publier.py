@@ -41,6 +41,13 @@ def _run_publier_cp1252(cible: Path) -> subprocess.CompletedProcess[bytes]:
     )
 
 
+def _source_renommee_en(module: ModuleType, destination: str) -> str:
+    """Le chemin dev publié SOUS `destination` dans la vitrine (table de renommage)."""
+    sources = [s for s, d in module.RENOMMAGES_VITRINE if d == destination]
+    assert len(sources) == 1, f"Une seule source attendue pour {destination!r}, trouvé : {sources}"
+    return sources[0]
+
+
 def _sdist() -> dict[str, list[str]]:
     """Le bloc `[tool.hatch.build.targets.sdist]` tel que le build le lira."""
     with PYPROJECT.open("rb") as flux:
@@ -92,18 +99,17 @@ def test_exclut_les_documents_internes() -> None:
 
     Ce fichier de test est lui-même publié (vitrine ET sdist PyPI) : il ne doit
     donc pas servir de sommaire des documents internes. Deux régimes, selon ce
-    qui porte la valeur de preuve — `_correspond` compare un chemin EXACT hors
-    liste blanche, ou un PRÉFIXE de dossier :
+    qui porte la valeur de preuve — `_correspond` est purement lexical : il
+    compare un chemin EXACT hors liste blanche, ou un PRÉFIXE de dossier :
 
     - le chemin EST le fichier réel à protéger (`docs/journal_de_bord.md`, …) :
       il reste tel quel, c'est lui la preuve, et son nom est de toute façon
       inévitable dès qu'on veut prouver qu'il ne sort pas ;
-    - la preuve tient au DOSSIER (`docs/superpowers/plans/`, `.claude/skills/`,
-      dont aucun n'est en liste blanche) : le dossier réel est conservé, le nom
-      de fichier est générique — il n'ajoute rien au test, et l'énumérer
-      publierait un titre de document interne.
+    - la preuve tient à la MÉCANIQUE (un dossier entier hors liste blanche) :
+      des chemins génériques suffisent, puisque le filtre ne connaît de toute
+      façon aucun de ces dossiers. Les nommer n'ajouterait rien au test.
 
-    Ne « restaurez » pas les noms réels sous ces deux dossiers : la preuve
+    Ne remplacez pas les chemins génériques par des chemins réels : la preuve
     serait identique, la fuite gratuite.
     """
     module = _charger_script()
@@ -115,12 +121,117 @@ def test_exclut_les_documents_internes() -> None:
         "docs/Definition_Projet_Detection_CRS_Quebec.md",
         "docs/maquette_rapport.html",
         "docs/CO_codes_epsg_quebec.pdf",
-        "docs/superpowers/plans/un-plan-interne.md",
-        ".claude/skills/une-competence/SKILL.md",
+        "docs/notes_internes/plans/un-plan-interne.md",
+        "outils_internes/config/reglage.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL_Archive.md",
     ]
     assert module.fichiers_a_publier(internes) == []
+
+
+# Vocabulaire AUTORISÉ du `.gitignore` publié. Liste blanche, comme le périmètre
+# lui-même : une règle qui ne figure pas ici ne part pas dans la vitrine. Un
+# dépôt de développement ignore forcément d'autres choses (réglages du poste,
+# dossiers de travail) — sans intérêt pour un contributeur externe, et `.gitignore`
+# est un des premiers fichiers qu'il ouvrira. Élargir ce fichier suppose donc
+# d'élargir cette liste, c'est-à-dire de le décider explicitement.
+MOTIFS_AUTORISES_GITIGNORE: frozenset[str] = frozenset(
+    {
+        ".venv/",
+        "__pycache__/",
+        "*.py[cod]",
+        ".pytest_cache/",
+        ".ruff_cache/",
+        ".mypy_cache/",
+        ".coverage",
+        "htmlcov/",
+        "dist/",
+        "build/",
+        "*.egg-info/",
+        "sorties/",
+        "*_analyse_crs*.html",
+        "*_journal.json",
+        ".vscode/",
+        ".idea/",
+        "Thumbs.db",
+        ".DS_Store",
+    }
+)
+
+# Les commentaires aussi sont lus : ils sont titrés, et la liste des titres est
+# fermée (une section nouvelle est une décision, pas un effet de bord).
+SECTIONS_AUTORISEES_GITIGNORE: frozenset[str] = frozenset(
+    {
+        "# Environnements et caches Python",
+        "# Build / distribution",
+        "# Sorties de l'outil pendant les essais",
+        "# IDE / OS",
+    }
+)
+
+
+def test_le_gitignore_publie_n_ecrit_que_du_vocabulaire_autorise() -> None:
+    """Le `.gitignore` de la vitrine ne dit QUE ce qu'un contributeur rencontre.
+
+    Celui du dépôt de développement ne peut pas être purgé (sans ses règles,
+    l'outillage du poste finirait committé) : la vitrine reçoit donc le sien,
+    publié par renommage à la copie. Ce test le tient au vocabulaire décidé.
+    """
+    module = _charger_script()
+    source = RACINE / _source_renommee_en(module, ".gitignore")
+    assert source.is_file(), f"{source} manque — la vitrine n'aurait aucun .gitignore."
+    lignes = [ligne.strip() for ligne in source.read_text(encoding="utf-8").splitlines()]
+    hors_vocabulaire = [
+        ligne
+        for ligne in lignes
+        if ligne
+        and ligne not in MOTIFS_AUTORISES_GITIGNORE
+        and ligne not in SECTIONS_AUTORISEES_GITIGNORE
+    ]
+    assert hors_vocabulaire == [], (
+        f"Lignes hors liste blanche dans le `.gitignore` publié : {hors_vocabulaire}. "
+        "Soit elles appartiennent au `.gitignore` du dépôt dev, soit il faut les "
+        "ajouter ici — délibérément."
+    )
+
+
+def test_le_gitignore_du_dev_ne_traverse_pas_le_filtre() -> None:
+    """Il est remplacé, pas recopié : hors liste blanche, donc jamais publié tel quel."""
+    module = _charger_script()
+    assert ".gitignore" not in module.PERIMETRE_VITRINE
+    assert module.fichiers_a_publier([".gitignore"]) == []
+
+
+def test_le_gitignore_de_la_vitrine_traverse_le_filtre_sous_son_nom_final() -> None:
+    """Une source renommée est publiée (liste blanche) et change de nom à la copie."""
+    module = _charger_script()
+    source = _source_renommee_en(module, ".gitignore")
+    assert module.fichiers_a_publier([source]) == [source]
+    assert module.destination_vitrine(source) == ".gitignore"
+    assert module.destination_vitrine("README.md") == "README.md"
+
+
+def test_copier_renomme_a_la_copie(tmp_path: Path) -> None:
+    """Le mécanisme lui-même : la source arrive dans la cible sous son nom final."""
+    module = _charger_script()
+    source_dir, cible = tmp_path / "source", tmp_path / "cible"
+    chemin = _source_renommee_en(module, ".gitignore")
+    (source_dir / chemin).parent.mkdir(parents=True)
+    (source_dir / chemin).write_text("dist/\n", encoding="utf-8")
+    cible.mkdir()
+
+    module.copier(source_dir, cible, [chemin])
+
+    assert (cible / ".gitignore").read_text(encoding="utf-8") == "dist/\n"
+    assert not (cible / chemin).exists()
+
+
+def test_le_gitignore_publie_couvre_l_essentiel_d_un_contributeur() -> None:
+    """Utile, pas seulement inoffensif : caches Python, build et sorties de l'outil."""
+    module = _charger_script()
+    contenu = (RACINE / _source_renommee_en(module, ".gitignore")).read_text(encoding="utf-8")
+    for motif in (".venv/", "__pycache__/", "dist/", "build/", "*.egg-info/", "sorties/"):
+        assert motif in contenu, f"{motif} absent du `.gitignore` de la vitrine."
 
 
 def test_retient_l_essentiel() -> None:

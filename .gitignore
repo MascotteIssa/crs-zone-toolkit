@@ -13,13 +13,9 @@ dist/
 build/
 *.egg-info/
 
-# Claude Code — configuration locale uniquement
-.claude/settings.local.json
-.mcp.json
-
 # Sorties de l'outil pendant les essais
 sorties/
-*_analyse_crs.html
+*_analyse_crs*.html
 *_journal.json
 
 # IDE / OS
@@ -27,17 +23,3 @@ sorties/
 .idea/
 Thumbs.db
 .DS_Store
-
-# Brouillons de travail (prompts de reprise, notes de session) — non versionnés
-docs/draft/
-
-# Test manuel sur données réelles (TEST_PLAN §6) : les données téléchargées et
-# les sorties ne sont JAMAIS committées — seuls les protocoles/résultats .md le sont.
-tests/user_test/**
-!tests/user_test/
-!tests/user_test/*.md
-
-# Skills tiers installés localement (uipro / ui-ux-pro-max, MIT) — non versionnés ;
-# seul le skill maison referentiel-crs-quebec est suivi.
-.claude/skills/*
-!.claude/skills/referentiel-crs-quebec/

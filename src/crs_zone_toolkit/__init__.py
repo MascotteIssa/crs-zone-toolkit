@@ -168,7 +168,9 @@ def report(
         source, region=region, assume_crs=assume_crs
     )
     quand = datetime.now(UTC)
-    html = _report.render_html(result, layer, profile=profile, grid=grid, generated_at=quand)
+    html = _report.render_html(
+        result, layer, profile=profile, grid=grid, generated_at=quand, fichier=source.name
+    )
     cible = Path(out_dir) if out_dir is not None else source.parent
     return _report._ecrire(html, source, out_dir=cible, overwrite=overwrite, generated_at=quand)
 

@@ -10,7 +10,9 @@ explicite — un fichier nouveau au dev n'entre dans la vitrine que si on
 l'ajoute ici. La fuite d'un document interne est ainsi impossible par
 construction (même principe que DT-19 : rendre la dérive impossible plutôt que
 la rattraper). Le périmètre du sdist (`pyproject.toml`) est aligné sur cette
-liste : ce qui ne sort pas sur GitHub ne sort pas sur PyPI.
+liste : ce qui ne sort pas sur GitHub ne sort pas sur PyPI. Une seconde table
+(`RENOMMAGES_VITRINE`) publie un fichier sous un AUTRE nom — le `.gitignore`,
+que les deux dépôts n'écrivent pas pareil.
 
 Usage :
     uv run python scripts/publier_release.py --cible ../crs_zone_toolkit_vitrine
@@ -53,7 +55,6 @@ def _forcer_utf8() -> None:
 PERIMETRE_VITRINE: tuple[str, ...] = (
     ".gitattributes",
     ".github/",
-    ".gitignore",
     ".pre-commit-config.yaml",
     "CITATION.cff",
     "LICENSE",
@@ -76,6 +77,19 @@ PERIMETRE_VITRINE: tuple[str, ...] = (
     "uv.lock",
 )
 
+# Fichiers publiés SOUS UN AUTRE NOM (source au dev → destination à la vitrine).
+# Un fichier de cette table est publié comme s'il était en liste blanche.
+#
+# `.gitignore` : les deux dépôts n'ignorent pas les mêmes choses. Celui du dev
+# doit couvrir l'outillage local du poste (sans quoi il finirait committé), et
+# ces règles nomment des dossiers de travail qui n'existent pas dans la vitrine
+# — or `.gitignore` est un des premiers fichiers qu'un lecteur ouvre. La vitrine
+# reçoit donc le sien, qui ne parle que de ce qu'un contributeur externe
+# rencontre : environnements, build, IDE, sorties de l'outil.
+RENOMMAGES_VITRINE: tuple[tuple[str, str], ...] = (("packaging/gitignore-vitrine", ".gitignore"),)
+
+_DESTINATIONS: dict[str, str] = dict(RENOMMAGES_VITRINE)
+
 # Exclusions APRÈS liste blanche : le protocole de test manuel vit sous
 # `tests/`, qui est inclus, mais reste interne (il référence des données
 # git-ignorées qu'un lecteur public n'aura jamais).
@@ -90,12 +104,22 @@ def _correspond(fichier: str, entrees: tuple[str, ...]) -> bool:
 
 
 def fichiers_a_publier(fichiers_suivis: Iterable[str]) -> list[str]:
-    """Filtre pur : la liste blanche, moins les exclusions. Testable sans git."""
+    """Filtre pur : liste blanche (+ sources renommées), moins les exclusions.
+
+    Rend des chemins SOURCE, tels qu'ils existent au dev ; leur nom dans la
+    vitrine se lit avec `destination_vitrine`. Testable sans git.
+    """
     return [
         f
         for f in fichiers_suivis
-        if not _correspond(f, EXCLUSIONS_VITRINE) and _correspond(f, PERIMETRE_VITRINE)
+        if not _correspond(f, EXCLUSIONS_VITRINE)
+        and (_correspond(f, PERIMETRE_VITRINE) or f in _DESTINATIONS)
     ]
+
+
+def destination_vitrine(fichier: str) -> str:
+    """Nom du fichier DANS la vitrine : renommage s'il est tabulé, sinon identité."""
+    return _DESTINATIONS.get(fichier, fichier)
 
 
 def vider_cible(cible: Path) -> None:
@@ -111,7 +135,7 @@ def vider_cible(cible: Path) -> None:
 
 def copier(racine: Path, cible: Path, fichiers: list[str]) -> None:
     for f in fichiers:
-        destination = cible / f
+        destination = cible / destination_vitrine(f)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(racine / f, destination)
 
