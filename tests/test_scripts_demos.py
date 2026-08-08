@@ -25,6 +25,8 @@ from __future__ import annotations
 import ast
 import importlib.util
 import inspect
+import io
+import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -248,3 +250,43 @@ def test_couche_absente_echoue_sans_rien_ecrire(script: ModuleType, tmp_path: Pa
         script.regenerer_exemple_rapport(tmp_path / "absente.gpkg", sortie=sortie)
 
     assert not sortie.exists()
+
+
+# ── 3. DT-15 (fermeture préventive, décision du 2026-08-02) ────────────────
+#
+# Ce script n'imprime aujourd'hui aucun caractère hors cp1252 : pas de défaut
+# observable à corriger, mais la même classe de défaut a déjà mordu deux fois
+# ailleurs (`cli.py`, `publier_release.py`) — un futur « ✓ »/« →» planterait en
+# silence sous une console Windows non redirigée en UTF-8. On ferme la famille
+# par prévention, avec la même protection, au même endroit dans le flux
+# d'exécution (premier geste de `main()`, avant tout le reste).
+
+
+def test_dt15_forcer_utf8_reconfigure_les_flux(script: ModuleType, monkeypatch) -> None:
+    """Même contrat que `cli._forcer_utf8` / `publier_release._forcer_utf8`
+    (DT-15) : un flux cp1252 reconfigurable ressort en UTF-8, prêt à écrire
+    « ✓ » sans planter."""
+    brut_out = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(brut_out, encoding="cp1252"))
+
+    script._forcer_utf8()
+
+    assert sys.stdout.encoding.lower() == "utf-8"
+    sys.stdout.write("✓ écrit")
+    sys.stdout.flush()
+    assert brut_out.getvalue().decode("utf-8") == "✓ écrit"
+
+
+def test_dt15_main_force_utf8_avant_tout(script: ModuleType, monkeypatch) -> None:
+    """`main()` force l'UTF-8 en tout premier, avant même `argparse` — même
+    garantie que `cli.py`/`publier_release.py` : la protection ne doit dépendre
+    d'aucune étape antérieure (analyse des arguments, régénération) qui
+    pourrait elle-même échouer avant d'y arriver."""
+    appele: list[bool] = []
+    monkeypatch.setattr(script, "_forcer_utf8", lambda: appele.append(True))
+    # Court-circuite l'exécution réelle : seul l'ordre d'appel nous intéresse.
+    monkeypatch.setattr(script, "regenerer_extrait", lambda *a, **k: Path("x"))
+
+    script.main(["--quoi", "extrait"])
+
+    assert appele == [True]

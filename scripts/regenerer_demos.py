@@ -30,6 +30,7 @@ réel (`crs_zone_toolkit._charger_et_analyser` puis `core.report` /
 from __future__ import annotations
 
 import argparse
+import contextlib
 import io
 import sys
 from datetime import UTC, datetime
@@ -43,6 +44,24 @@ GIF = IMAGES / "demo.gif"
 README = RACINE / "README.md"
 COUCHE_DEFAUT = RACINE / "tests" / "user_test" / "data" / "bdat" / "regio_s.shp"
 REGION_DEFAUT = "qc"
+
+
+def _forcer_utf8() -> None:
+    """Force l'UTF-8 sur stdout/stderr (même correctif que `cli.py` et
+    `publier_release.py`, DT-15). Sans ça, une console Windows non redirigée
+    en UTF-8 retombe sur cp1252 : un futur caractère hors de ce jeu (« ✓ »,
+    « → », …) planterait (UnicodeEncodeError) sans prévenir. Ce script
+    n'imprime aujourd'hui aucun caractère de ce genre — fermeture préventive
+    de la famille DT-15 (décision du 2026-08-02), pas une réparation. Les
+    flux de test/capture qui n'exposent pas ``reconfigure`` sont laissés
+    intacts."""
+    for flux in (sys.stdout, sys.stderr):
+        reconfigurer = getattr(flux, "reconfigure", None)
+        if reconfigurer is None:
+            continue
+        with contextlib.suppress(ValueError, OSError):  # flux déjà engagé / non reconfigurable
+            reconfigurer(encoding="utf-8")
+
 
 # Paramètres connus des ressources d'origine (journal 2026-07-25) : console Rich
 # en mode enregistrement, largeur 92, truecolor ; GIF 860×740.
@@ -512,6 +531,7 @@ def regenerer_gif(
 
 
 def main(argv: list[str] | None = None) -> int:
+    _forcer_utf8()  # DT-15 : avant toute sortie, indépendamment du codepage console
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--quoi",
