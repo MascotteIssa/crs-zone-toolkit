@@ -4,6 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/crs-zone-toolkit.svg)](https://pypi.org/project/crs-zone-toolkit/)
 [![Python](https://img.shields.io/pypi/pyversions/crs-zone-toolkit.svg)](https://pypi.org/project/crs-zone-toolkit/)
 [![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE)
+[![DOI](https://zenodo.org/badge/1319874815.svg)](https://doi.org/10.5281/zenodo.21956685)
 
 **Quel système de coordonnées pour ma couche québécoise ?** `crszone` répond avec des
 chiffres : il mesure la distorsion réellement encourue par chaque candidat, **recommande**
