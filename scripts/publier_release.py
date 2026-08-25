@@ -60,14 +60,7 @@ PERIMETRE_VITRINE: tuple[str, ...] = (
     "LICENSE",
     "QUICKSTART.md",
     "README.md",
-    "docs/ARCHITECTURE.md",
-    "docs/CLI_UX.md",
     "docs/DATA_REFERENCE.md",
-    "docs/SPEC.md",
-    "docs/TEST_PLAN.md",
-    "docs/calibrage/",
-    "docs/exemple_rapport.html",
-    "docs/feuille_de_route.md",
     "docs/images/",
     "docs/references.md",
     "pyproject.toml",
@@ -90,10 +83,20 @@ RENOMMAGES_VITRINE: tuple[tuple[str, str], ...] = (("packaging/gitignore-vitrine
 
 _DESTINATIONS: dict[str, str] = dict(RENOMMAGES_VITRINE)
 
-# Exclusions APRÈS liste blanche : le protocole de test manuel vit sous
-# `tests/`, qui est inclus, mais reste interne (il référence des données
-# git-ignorées qu'un lecteur public n'aura jamais).
-EXCLUSIONS_VITRINE: tuple[str, ...] = ("tests/user_test/",)
+# Exclusions APRÈS liste blanche : deux fichiers vivent sous un dossier inclus
+# sans devoir être publiés.
+#
+# `tests/user_test/` : le protocole de test manuel, interne (il référence des
+# données git-ignorées qu'un lecteur public n'aura jamais).
+#
+# `scripts/construire_exe.py` : la chaîne d'empaquetage de l'exécutable de
+# bureau lit `packaging/crszone-gui.spec`, et `packaging/` est hors des deux
+# périmètres depuis la Phase F. Publié seul, ce script serait mort dès le
+# clone — décision du 2026-08-25 (G3) : toute la chaîne reste au dépôt de
+# travail. Une exclusion posée ici appelle son pendant dans l'`exclude` du
+# sdist (pyproject.toml), sans quoi le fichier repartirait sur PyPI en
+# disparaissant de GitHub ; c'est testé.
+EXCLUSIONS_VITRINE: tuple[str, ...] = ("tests/user_test/", "scripts/construire_exe.py")
 
 # Ce qu'on ne détruit jamais dans le clone cible.
 CONSERVES_CIBLE: tuple[str, ...] = (".git", "dist", ".venv")

@@ -33,10 +33,16 @@ dependencies = [
   "rich>=13.0",
   "jinja2>=3.1",
   "matplotlib>=3.8",
+  "pywebview>=6.2.1",
 ]
 
 [project.scripts]
 crszone = "crs_zone_toolkit.cli:app"
+
+# gui-scripts (pas scripts) : évite qu'une console s'ouvre derrière la
+# fenêtre pywebview une fois le paquet installé (PEP 621).
+[project.gui-scripts]
+crszone-gui = "crs_zone_toolkit.gui.app:main"
 
 [project.urls]
 Homepage = "https://github.com/MascotteIssa/crs-zone-toolkit"
@@ -52,6 +58,7 @@ dev = [
   "mypy>=1.10",
   "pre-commit>=3.7",
   "jsonschema>=4.0",
+  "pyinstaller>=6.22.2",
 ]
 
 [build-system]
@@ -83,13 +90,7 @@ include = [
   "/src",
   "/tests",
   "/scripts",
-  "/docs/ARCHITECTURE.md",
-  "/docs/CLI_UX.md",
   "/docs/DATA_REFERENCE.md",
-  "/docs/SPEC.md",
-  "/docs/TEST_PLAN.md",
-  "/docs/calibrage",
-  "/docs/feuille_de_route.md",
   "/docs/references.md",
   "/.github",
   "/README.md",
@@ -99,13 +100,16 @@ include = [
   "/pyproject.toml",
   "/uv.lock",
 ]
-# Seule exclusion résiduelle : `/tests` entre en bloc (la suite doit pouvoir
-# être rejouée), or `tests/user_test/` contient les protocoles de test manuel
-# internes — ils référencent des données git-ignorées qu'un consommateur
-# n'aura jamais. Pendant exact de EXCLUSIONS_VITRINE. Toute exclusion sous
-# `/docs` serait morte ici : la liste blanche ci-dessus s'en charge déjà.
+# Deux exclusions résiduelles, pendants exacts de EXCLUSIONS_VITRINE : `/tests`
+# et `/scripts` entrent en bloc (la suite doit pouvoir être rejouée, DT-21), or
+# `tests/user_test/` contient les protocoles de test manuel internes — ils
+# référencent des données git-ignorées qu'un consommateur n'aura jamais — et
+# `scripts/construire_exe.py` lit `packaging/crszone-gui.spec`, hors des deux
+# périmètres. Toute exclusion sous `/docs` serait morte ici : la liste blanche
+# ci-dessus s'en charge déjà.
 exclude = [
   "/tests/user_test/**",
+  "/scripts/construire_exe.py",
 ]
 # Le `.gitignore` du dépôt entre dans le sdist D'OFFICE : hatchling le
 # `force-include` (`builders/sdist.py`, get_default_build_data), ce qui

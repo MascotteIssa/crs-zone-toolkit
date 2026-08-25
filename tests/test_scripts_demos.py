@@ -292,3 +292,23 @@ def test_dt15_main_force_utf8_avant_tout(script: ModuleType, monkeypatch) -> Non
     script.main(["--quoi", "extrait"])
 
     assert appele == [True]
+
+
+def test_quoi_interface_appelle_la_capture_de_l_interface(script: ModuleType, monkeypatch) -> None:
+    """`--quoi interface` (G3, 25/08) régénère les captures de l'écran de
+    recommandation, et `--quoi tout` les emporte aussi.
+
+    Ces deux images sont publiées au README : sans cette branche, elles
+    resteraient les seules ressources de démonstration faites à la main, ce
+    que DT-17 a précisément banni.
+    """
+    appels: list[str] = []
+    monkeypatch.setattr(
+        script,
+        "regenerer_captures_interface",
+        lambda *a, **k: appels.append("interface") or [Path("interface-clair.png")],
+    )
+
+    script.main(["--quoi", "interface"])
+
+    assert appels == ["interface"]

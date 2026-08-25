@@ -12,6 +12,10 @@ Régénère les ressources de démonstration du README depuis le **moteur réel*
   `<!-- extrait:debut -->` / `<!-- extrait:fin -->`
 - `docs/exemple_rapport.html`
 - `docs/images/rapport-{clair,sombre}.png` et `rapport-distorsion-{clair,sombre}.png`
+- `docs/images/interface-{clair,sombre}.png` — l'écran de recommandation de
+  l'interface de bureau, peuplé par les vrais chiffres du moteur : la page
+  photographiée est celle que l'application charge, seul le pont
+  `pywebview.api` est simulé (aucune fenêtre native en jeu)
 - `docs/images/demo.gif`
 
 ### Quand le lancer

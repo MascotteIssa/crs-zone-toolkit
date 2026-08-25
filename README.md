@@ -6,25 +6,49 @@
 [![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE)
 [![DOI](https://zenodo.org/badge/1319874815.svg)](https://doi.org/10.5281/zenodo.21956685)
 
-**Quel système de coordonnées pour ma couche québécoise ?** `crszone` répond avec des
-chiffres : il mesure la distorsion réellement encourue par chaque candidat, **recommande**
-la projection la moins déformante — fuseau **MTM** ou **Québec Lambert** — et **reprojette**
-si vous le lui demandez. L'outil recommande ; vous décidez.
+**Quel système de coordonnées pour ma couche québécoise ?** `crszone` répond avec des
+chiffres. Il mesure la distorsion réellement encourue par chaque candidat (fuseau **MTM**
+ou **Québec Lambert**), **recommande** la projection la moins déformante, puis
+**reprojette** si vous le lui demandez. L’outil recommande ; vous décidez.
 
-![Démonstration : analyse d'une couche des 21 régions administratives du Québec, de la ligne de commande au rapport HTML](https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/demo.gif)
+![Démonstration : analyse d’une couche des 21 régions administratives du Québec, de la ligne de commande au rapport HTML](https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/demo.gif)
 
-## Pourquoi pas simplement `estimate_utm_crs()` ?
+## Pourquoi pas simplement `estimate_utm_crs()` ?
 
-L'utilitaire de GeoPandas ne connaît que l'**UTM**. Il ignore les fuseaux **MTM** du Québec,
-larges de 3° au lieu de 6° — et comme la distorsion croît avec le *carré* de l'écart au
-méridien central, cette moitié de largeur vaut **quatre fois moins de distorsion** : aux
-latitudes habitées du Québec, un fuseau MTM tient dans −100 à +72 ppm là où l'UTM s'étale
-de −400 à +287 ppm. Il ignore aussi le **Québec Lambert**, et les familles de datum
-canadiennes — NAD83 d'origine, NAD83(CSRS), NAD27 — qu'il ne faut jamais franchir en
-silence. Il ne mesure aucune distorsion, ne justifie rien, et ne produit ni rapport, ni
-découpage multi-fuseaux, ni journal de décision.
+L’utilitaire de GeoPandas ne propose que de l’**UTM**. Il ignore les fuseaux **MTM** du
+Québec, larges de 3° au lieu de 6°, alors que la distorsion croît avec le *carré* de l’écart
+au méridien central : cette moitié de largeur vaut **quatre fois moins de distorsion**. Aux
+latitudes habitées du Québec, un fuseau MTM tient dans −100 à +72 ppm là où l’UTM s’étale
+de −400 à +287 ppm.
 
-`crszone` fait exactement cela, et rien d'autre.
+Sur une couche couvrant tout le Québec, il répond `EPSG:26919` (UTM 19N) : un fuseau unique
+pour 23° de longitude, dont les bords tombent à plus de 11° du méridien central là où l’UTM
+en prévoit 3. Rien dans sa réponse ne le signale.
+
+Le datum subit le même sort. Une couche déclarée en NAD83 ressort en WGS 84 (`EPSG:32618`),
+soit un changement de famille sans avertissement. Le paramètre `datum_name` accepte pourtant
+NAD83, NAD83(CSRS) et NAD27, encore faut-il le savoir et le demander.
+*(geopandas 1.1.4, pyproj 3.7.2, PROJ 9.5.1)*
+
+Il ne mesure aucune distorsion, ne justifie rien, et ne produit ni rapport, ni découpage
+multi-fuseaux, ni journal de décision.
+
+`crszone` fait exactement cela, et rien d’autre.
+
+## Et les outils natifs des logiciels SIG ?
+
+ArcGIS Pro sait proposer une projection d’après l’emprise des données et la propriété à
+préserver, surface, distance ou forme ([New suggested projected coordinate
+system](https://pro.arcgis.com/en/pro-app/latest/help/mapping/properties/define-a-new-coordinate-system.htm)).
+Il en fabrique une **sur mesure**, rangée sous « Custom », quand l’échange de données
+québécoises réclame au contraire le fuseau MTM officiel ou le Québec Lambert, avec leur code
+EPSG. [QGIS](https://docs.qgis.org/3.44/en/docs/user_manual/working_with_projections/working_with_projections.html)
+donne accès à quelque 7 000 SCR et vous accompagne pour les assigner et les transformer, le
+choix du candidat restant le vôtre.
+
+`crszone` répond à une autre question : de combien votre couche se déforme, en ppm, dans
+chacun des candidats. C’est ce chiffre qui fonde sa recommandation et qu’il inscrit au
+rapport.
 
 ## Installation
 
@@ -37,15 +61,39 @@ uv tool install crs-zone-toolkit     # commande isolée, disponible partout
 uvx crs-zone-toolkit analyze ma_couche.gpkg   # sans rien installer
 ```
 
-Python 3.11 ou plus. Aucune donnée de référence à télécharger : la grille des fuseaux, la
-limite du Québec et le profil géodésique voyagent **dans le paquet**.
+Il vous faut Python 3.11 ou plus, et rien d’autre : la grille des fuseaux, la limite du
+Québec et le profil géodésique voyagent **dans le paquet**, sans aucune donnée de référence
+à télécharger.
+
+## Sans passer par le terminal
+
+La ligne de commande n’est pas le seul accès. La commande `crszone-gui` (installée avec
+le paquet, au même titre que `crszone`) ouvre une fenêtre qui pose les mêmes questions que
+le terminal. Elle appelle le même moteur, sans qu’aucune règle de décision n’y soit écrite
+deux fois.
+
+Le premier des deux parcours proposés, « Traiter une couche », se déroule en quatre
+étapes. Vous choisissez le fichier, l’outil l’analyse, il affiche sa recommandation avec
+les chiffres qui la fondent (part de chaque fuseau, distorsion mesurée), puis vous décidez
+de reprojeter, de découper par fuseau ou de ne rien faire. Le second, « Générer la grille
+des fuseaux », produit le repère visuel des fuseaux MTM (le même fichier que la commande
+`grid`) à ouvrir dans votre logiciel SIG.
+
+Les sorties sont identiques à celles du terminal, rapport HTML compris, et vont dans le
+dossier que vous désignez. La fenêtre suit le thème de votre système, et vous pouvez la
+basculer du clair au sombre comme le rapport.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/interface-sombre.png">
+  <img alt="Interface de bureau : la recommandation, ses chiffres et les décisions offertes" src="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/interface-clair.png">
+</picture>
 
 ## En trente secondes
 
 <!-- extrait:debut -->
 ```console
 $ crszone --region qc analyze regio_s.shp
-Analyse CRS : profil Québec (qc)                                                      crszone 0.1.0
+Analyse CRS : profil Québec (qc)                                                      crszone 0.2.0
 ───────────────────────────────────────────────────────────────────────────────────────────────────
 Couche      regio_s.shp (21 entités, polygones)
 CRS déclaré EPSG:4269, NAD83 (géographique)
@@ -81,12 +129,12 @@ Distorsion mesurée (187 points d'échantillonnage)
 ```
 <!-- extrait:fin -->
 
-Puis, quand vous êtes d'accord :
+Puis, quand vous êtes d’accord :
 
 <!-- apply:debut -->
 ```console
 $ crszone apply montreal.gpkg --out sorties --auto
-Analyse CRS : profil Québec (qc)                                                      crszone 0.1.0
+Analyse CRS : profil Québec (qc)                                                      crszone 0.2.0
 ───────────────────────────────────────────────────────────────────────────────────────────────────
 Couche      montreal.gpkg (1 entité, polygones)
 CRS déclaré EPSG:4269, NAD83 (géographique)
@@ -104,38 +152,37 @@ Mode --auto : application de la recommandation (MTM fuseau 8, EPSG:32188).
 ```
 <!-- apply:fin -->
 
-Le **pipeline PROJ exact** est affiché puis journalisé : la transformation appliquée est
-vérifiable, pas devinée. Démarrage complet : **[QUICKSTART.md](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md)**.
+Le **pipeline PROJ exact** est affiché puis journalisé : la transformation appliquée est
+vérifiable, pas devinée. Pour démarrer pas à pas, lisez
+**[QUICKSTART.md](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md)**.
 
 ## La règle de recommandation, en deux lignes
 
 > **Un seul fuseau traversé → ce fuseau.** Plusieurs fuseaux → la **projection unique la
-> moins déformée** entre le fuseau dominant et le Québec Lambert (le fuseau l'emporte à
+> moins déformée** entre le fuseau dominant et le Québec Lambert (le fuseau l’emporte à
 > égalité). Le **découpage** par fuseau est toujours offert en alternative, jamais imposé.
 
-Cette règle n'est pas une intuition : elle a été **calibrée sur données réelles**, le
-jugement d'expertise servant d'étalon. La règle précédente gatait sur la part du fuseau
+Cette règle n’est pas une intuition : elle a été **calibrée sur données réelles**, le
+jugement d’expertise servant d’étalon. La règle précédente gatait sur la part du fuseau
 dominant *avant* de regarder la distorsion, et recommandait de ce fait la projection **la
-plus déformée** pour les régions compactes — le Bas-Saint-Laurent mesure 407 ppm en MTM 6
-contre 5106 ppm en Québec Lambert. Méthodologie, balayage et décision :
-[`docs/calibrage/`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/calibrage/2026-07-19-calibrage-seuils.md) · formalisation :
-[SPEC §4.3](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/SPEC.md).
+plus déformée** pour les régions compactes : le Bas-Saint-Laurent mesure 407 ppm en MTM 6
+contre 5106 ppm en Québec Lambert.
 
 ## Le rapport HTML
 
-Chaque `analyze` écrit un rapport **autonome** : un seul fichier, aucune ressource externe,
-carte et styles embarqués. Il s'ouvre hors ligne, s'archive, se joint à un courriel — et
-suit le thème clair ou sombre de votre système, avec un bouton pour basculer.
+Chaque `analyze` écrit un rapport **autonome** : un seul fichier, aucune ressource externe,
+carte et styles embarqués. Il s’ouvre hors ligne, s’archive, se joint à un courriel, et
+suit le thème clair ou sombre de votre système (un bouton permet de basculer).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/rapport-sombre.png">
   <img alt="Rapport HTML : verdict en tête, couche analysée, situation dans les fuseaux MTM" src="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/rapport-clair.png">
 </picture>
 
-L'élément central est l'échelle de distorsion, **divergente et centrée sur 0 ppm**, qui
-rend le compromis visible d'un coup d'œil — ici, la couche des 21 régions administratives,
-trop étendue pour tout fuseau MTM. La cible sort en `EPSG:32198` parce que cette donnée est
-en **NAD83 d'origine** : la famille d'entrée est préservée. Sur une entrée en NAD83(CSRS),
+L’élément central est l’échelle de distorsion, **divergente et centrée sur 0 ppm**, qui
+rend le compromis visible d’un coup d’œil (ici, la couche des 21 régions administratives,
+trop étendue pour tout fuseau MTM). La cible sort en `EPSG:32198` parce que cette donnée est
+en **NAD83 d’origine** : la famille d’entrée est préservée. Sur une entrée en NAD83(CSRS),
 le standard actuel, le Québec Lambert visé serait `EPSG:6622`.
 
 <picture>
@@ -143,12 +190,9 @@ le standard actuel, le Québec Lambert visé serait `EPSG:6622`.
   <img alt="Échelle de distorsion divergente comparant MTM fuseau 8 et Québec Lambert" src="https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/images/rapport-distorsion-clair.png">
 </picture>
 
-**[Ouvrir un rapport réel](https://raw.githubusercontent.com/MascotteIssa/crs-zone-toolkit/main/docs/exemple_rapport.html)** *(clic droit → enregistrer, puis
-ouvrir dans un navigateur — GitHub n'exécute pas le HTML des dépôts).*
-
 ## Pour un script
 
-`--json` écrit le résultat sur la sortie standard, le résumé humain sur l'erreur standard :
+`--json` écrit le résultat sur la sortie standard, le résumé humain sur l’erreur standard :
 
 ```console
 $ crszone analyze montreal.gpkg --json | jq .recommandation
@@ -163,61 +207,54 @@ $ crszone analyze montreal.gpkg --json | jq .recommandation
 ```
 
 Le contrat est **versionné** (`schema_version`) et validé par un schéma JSON Schema dans la
-suite de tests. L'API Python (`analyze`, `apply`, `report`) est typée et livre son marqueur
+suite de tests. L’API Python (`analyze`, `apply`, `report`) est typée et livre son marqueur
 [PEP 561](https://peps.python.org/pep-0561/).
 
-Codes de sortie : `0` succès · `1` erreur de données · `2` refus explicite (CRS absent,
+Codes de sortie : `0` succès · `1` erreur de données · `2` refus explicite (CRS absent,
 sortie existante, non interactif sans choix).
 
-> **Windows / PowerShell — préférez `--json-out` à `>`.** La redirection `>` de PowerShell
-> ne transmet pas les octets du programme : elle les **décode** d'abord avec
+> **Windows / PowerShell : préférez `--json-out` à `>`.** La redirection `>` de PowerShell
+> ne transmet pas les octets du programme : elle les **décode** d’abord avec
 > `[Console]::OutputEncoding`, puis les **réécrit** dans son propre encodage. Sur une console
-> française laissée en cp850/cp1252, l'UTF-8 émis par `crszone` est mal décodé (`donn├®es`) —
+> française laissée en cp850/cp1252, l’UTF-8 émis par `crszone` est mal décodé (`donn├®es`),
 > et PowerShell 5.1 écrit ensuite le fichier en **UTF-16LE**, pas en UTF-8. Le résultat est
 > illisible pour la plupart des outils.
 >
-> **L'outil n'y est pour rien** : il émet bien de l'UTF-8 sur ses flux (DT-15), et le tuyau
-> (`|`) passe sans dommage. Le remède tient en un mot : laissez `crszone` écrire le fichier
+> **L’outil n’y est pour rien** : il émet bien de l’UTF-8 sur ses flux (DT-15), et le tuyau
+> (`|`) passe sans dommage. Le remède tient en un mot : laissez `crszone` écrire le fichier
 > lui-même, avec **`--json-out`** pour le JSON et **`--report`** pour le rapport HTML.
 >
-> Si vous tenez à rediriger, corrigez d'abord le décodage —
-> `[Console]::OutputEncoding = [Text.Encoding]::UTF8` — puis écrivez avec
-> `| Out-File -Encoding utf8`. *(Vérifié dans les deux sens : console en cp850 → fichier
-> corrompu ; console en UTF-8 → fichier valide.)*
+> Si vous tenez à rediriger, corrigez d’abord le décodage avec
+> `[Console]::OutputEncoding = [Text.Encoding]::UTF8`, puis écrivez avec
+> `| Out-File -Encoding utf8`. *(Vérifié dans les deux sens : console en cp850 → fichier
+> corrompu ; console en UTF-8 → fichier valide.)*
 
 
-## Ce que l'outil ne fait pas
+## Ce que l’outil ne fait pas
 
-Il ne change **jamais** de famille de datum en silence : une transformation approximative
+Il ne change **jamais** de famille de datum en silence : une transformation approximative
 est soit refusée, soit exécutée avec un avertissement journalisé (NAD27 exige la grille
-NTv2). Il ne recommande rien pour les données tombant hors du Québec — il le signale. Il
-n'écrase aucun fichier sans `--overwrite`. Il ne produit ni PDF, ni sortie texte, et
-n'accède **à aucun réseau**, ni à l'exécution ni dans ses tests.
+NTv2). Il ne recommande rien pour les données tombant hors du Québec, il le signale. Il
+n’écrase aucun fichier sans `--overwrite`. Il ne produit ni PDF, ni sortie texte, et
+n’accède **à aucun réseau**, ni à l’exécution ni dans ses tests.
 
-Il n'est pas conçu pour les très gros volumes : le traitement est **en mémoire** et l'outil
-vise des couches de l'ordre de 10⁴ à 10⁵ entités (12 580 lignes s'analysent en 6,1 s).
-L'échantillonnage de distorsion est plafonné, mais la répartition par fuseau et le
-découpage croissent avec le nombre d'entités : au-delà, prévoyez de découper la couche en
+Il n’est pas conçu pour les très gros volumes : le traitement est **en mémoire** et l’outil
+vise des couches de l’ordre de 10⁴ à 10⁵ entités (12 580 lignes s’analysent en 6,1 s).
+L’échantillonnage de distorsion est plafonné, mais la répartition par fuseau et le
+découpage croissent avec le nombre d’entités : au-delà, prévoyez de découper la couche en
 amont.
 
-Le périmètre V1 est le Québec. Le noyau ne connaît aucun code EPSG : tous les faits
-géodésiques viennent d'un **profil de région** (`regions/qc/`), ce que verrouille un test
-dédié. C'est ce qui rendra possible l'extension au reste du Canada, puis ailleurs
-([feuille de route](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/feuille_de_route.md)).
+Le périmètre V1 est le Québec. Le noyau ne connaît aucun code EPSG : tous les faits
+géodésiques viennent d’un **profil de région** (`regions/qc/`), ce que verrouille un test
+dédié. C’est ce qui rendra possible l’extension au reste du Canada, puis ailleurs.
 
 ## Documentation
 
 | Document | Rôle |
 |---|---|
 | [`QUICKSTART.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/QUICKSTART.md) | Les trois commandes, options utiles, garde-fous |
-| [`docs/SPEC.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/SPEC.md) | Cahier des charges fonctionnel V1 |
 | [`docs/DATA_REFERENCE.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/DATA_REFERENCE.md) | Source de vérité géodésique (codes EPSG vérifiés) |
-| [`docs/calibrage/`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/calibrage/2026-07-19-calibrage-seuils.md) | Calibrage de la règle de décision sur données réelles |
-| [`docs/ARCHITECTURE.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/ARCHITECTURE.md) | Noyau + adaptateurs, lois de dépendance, API |
-| [`docs/CLI_UX.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/CLI_UX.md) | Maquette du flux terminal |
-| [`docs/TEST_PLAN.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/TEST_PLAN.md) | Jeux de test et protocole de calibrage |
-| [`docs/feuille_de_route.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/feuille_de_route.md) | Évolutions (Québec → Canada → international) |
-| [`docs/references.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/references.md) | Bibliographie (APA 7) — toute décision est sourcée |
+| [`docs/references.md`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/docs/references.md) | Bibliographie (APA 7), toute décision est sourcée |
 
 Les sigles `DT-xx` et `N-xx` cités au fil de ces pages sont les identifiants du registre de
 dette technique et des observations du test manuel, tenus au dépôt de développement et non
@@ -225,11 +262,11 @@ publiés.
 
 ## Attributions
 
-- **Codes EPSG** : registre EPSG (IOGP) via epsg.org / epsg.io ; usage québécois d'après
+- **Codes EPSG** : registre EPSG (IOGP) via epsg.org / epsg.io ; usage québécois d’après
   MERN/MRNF, *Codes EPSG des projections utilisées au Québec*, décembre 2020.
-- **Grille des fuseaux et limite du Québec** : découpées d'après MRNF, *Découpages
+- **Grille des fuseaux et limite du Québec** : découpées d’après MRNF, *Découpages
   administratifs*, Données Québec, licence **CC-BY 4.0**. Les captures et le rapport
-  d'exemple de ce README sont dérivés du même jeu.
+  d’exemple de ce README sont dérivés du même jeu.
 
 ## English summary
 
@@ -242,4 +279,4 @@ HTML report. **The command line, reports and documentation are in French.**
 
 ## Licence
 
-MIT — voir [`LICENSE`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE). © 2026 Issa Moussahoudou.
+MIT, voir [`LICENSE`](https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE). © 2026 Issa Moussahoudou.

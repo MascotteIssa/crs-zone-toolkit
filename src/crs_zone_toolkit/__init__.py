@@ -1,11 +1,10 @@
 """crs-zone-toolkit — analyse, recommandation et reprojection CRS (profils régionaux, V1 : Québec).
 
 API publique (contrat : docs/ARCHITECTURE.md §4) :
-    from crs_zone_toolkit import analyze, apply, report
-`analyze` (recommandation CRS), `apply` (exécution d'une décision) et
-`report` (rapport HTML d'analyse) sont implémentées et exportées.
-`generate_grid` (génération de grille MTM) reste un outil de développement
-interne (docs/gridgen), pas encore exposé ici.
+    from crs_zone_toolkit import analyze, apply, report, generate_grid
+`analyze` (recommandation CRS), `apply` (exécution d'une décision),
+`report` (rapport HTML d'analyse) et `generate_grid` (génération de la
+grille MTM) sont implémentées et exportées.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 
     from crs_zone_toolkit.core.profile import RegionProfile
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 _FORMATS_GRILLE: dict[str, str] = {"geojson": "GeoJSON", "gpkg": "GPKG"}
 FORMATS_GRILLE: tuple[str, ...] = tuple(sorted(_FORMATS_GRILLE))
@@ -124,7 +123,7 @@ def apply(
     )
 
 
-def _generer_grille(
+def generate_grid(
     *,
     region: str = "qc",
     out: Path | str,
@@ -175,4 +174,12 @@ def report(
     return _report._ecrire(html, source, out_dir=cible, overwrite=overwrite, generated_at=quand)
 
 
-__all__ = ["analyze", "apply", "report", "AnalysisResult", "ApplyResult", "Decision"]
+__all__ = [
+    "analyze",
+    "apply",
+    "report",
+    "generate_grid",
+    "AnalysisResult",
+    "ApplyResult",
+    "Decision",
+]

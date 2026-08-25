@@ -379,7 +379,7 @@ def grid(
         # _FORMATS_GRILLE (geojson/gpkg), pas de correspondance à maintenir à part.
         ext = out_format
         cible = out_path if out_path is not None else Path(f"grille_mtm_{region}.{ext}")
-        chemin, n, attributs = crs_zone_toolkit._generer_grille(
+        chemin, n, attributs = crs_zone_toolkit.generate_grid(
             region=region, out=cible, out_format=out_format, clip=not no_clip
         )
         affichage.resume_grille(out, chemin, n, attributs, clip=not no_clip)

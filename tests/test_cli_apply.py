@@ -205,3 +205,32 @@ def test_interactif_choix_2_sous_invite_fuseau(tmp_path, monkeypatch):
     journal = json.loads((tmp_path / "routes_journal.json").read_text(encoding="utf-8"))
     assert journal["decision"]["choix"] == "zone"
     assert journal["decision"]["zone"] == 9
+
+
+def test_interactif_choix_3_decoupage(tmp_path, monkeypatch):  # DT-08
+    """[3] au menu découpe réellement par fuseau, et le trace comme un choix HUMAIN.
+
+    Dernière entrée du menu restée sans test interactif (DT-08) : le découpage
+    n'était couvert qu'en non-interactif (TP-21, `--choice split`). Ce qui
+    distingue ce test de TP-21 est `origine == "interactive"` : `--choice split`
+    trace `"choice"`, et c'est cette valeur que lit la note de traçabilité de
+    DT-27 quand un humain décide contre la recommandation.
+
+    Morsure : retirer la branche `choix == "3"` de `cli._menu_interactif` fait
+    retomber `[3]` sur le défaut `recommendation` — un seul fichier, `choix`
+    et `origine` faux. Vérifié en révoquant la branche.
+    """
+    monkeypatch.setattr(cli_mod, "_est_interactif", lambda: True)
+    src = _deux_fuseaux(tmp_path)
+    res = runner.invoke(app, ["apply", str(src), "--out", str(tmp_path)], input="3\n")
+    assert res.exit_code == 0
+
+    journal = json.loads((tmp_path / "routes_journal.json").read_text(encoding="utf-8"))
+    assert journal["decision"]["choix"] == "split"
+    assert journal["decision"]["origine"] == "interactive"
+
+    # Mêmes sorties que TP-21 : le menu passe par le même noyau de découpage.
+    produits = sorted(tmp_path.glob("routes_zone*_epsg*.gpkg"))
+    total = sum(len(gpd.read_file(p)) for p in produits)
+    assert len(produits) == 2
+    assert total == 5  # somme = entités d'origine, aucune coupée/dupliquée

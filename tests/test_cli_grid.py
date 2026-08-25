@@ -48,14 +48,19 @@ def test_grid_format_invalide_exit2_propre(tmp_path: Path) -> None:  # revue glo
     assert not dst.exists()
 
 
-def test_grid_egale_grille_committee(tmp_path: Path) -> None:  # TP-32
+def test_grid_egale_grille_committee(tmp_path: Path, qc_grid) -> None:  # TP-32
+    """La grille regénérée par la CLI égale la grille committée du profil.
+
+    La référence est lue par `load_grid` (fixture `qc_grid`), c'est-à-dire par le
+    chemin même dont le moteur se sert — package-relatif, donc valable à
+    l'identique au dépôt, dans le sdist déplié et depuis le paquet installé.
+    Elle était lue par un chemin relatif au cwd (DT-08) : le seul de la suite, et
+    le test tombait dès qu'on lançait pytest d'ailleurs que la racine du dépôt,
+    alors que `scripts/`/DT-21 promettent une suite rejouable depuis l'archive.
+    """
     dst = tmp_path / "regen.geojson"
     runner.invoke(app, ["grid", "--out", str(dst)])
     regen = gpd.read_file(dst).sort_values("zone").reset_index(drop=True)
-    committee = (
-        gpd.read_file(Path("src/crs_zone_toolkit/regions/qc/grille_mtm_qc.geojson"))
-        .sort_values("zone")
-        .reset_index(drop=True)
-    )
+    committee = qc_grid.sort_values("zone").reset_index(drop=True)
     assert list(regen["zone"]) == list(committee["zone"])
     assert regen.geometry.geom_equals_exact(committee.geometry, tolerance=1e-6).all()

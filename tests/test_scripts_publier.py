@@ -115,6 +115,38 @@ def test_le_sdist_garde_l_exclusion_residuelle_du_protocole_de_test() -> None:
     assert "tests/user_test/" in module.EXCLUSIONS_VITRINE
 
 
+def test_toute_exclusion_vitrine_a_son_pendant_dans_le_sdist() -> None:
+    """L'invariant « ce qui ne sort pas sur GitHub ne sort pas non plus sur
+    PyPI » ne tient pas qu'aux listes blanches.
+
+    Un fichier couvert par les deux listes blanches (`scripts/`, `tests/`)
+    mais exclu d'un seul côté repartirait sur PyPI en disparaissant de GitHub
+    — la fuite exacte que le test d'inclusion ci-dessus interdit, prise par
+    l'autre bout. Chaque exclusion vitrine doit donc avoir son pendant dans
+    l'`exclude` du sdist.
+    """
+    module = _charger_script()
+    exclus_sdist = {_normaliser(e).removesuffix("/**") for e in _sdist()["exclude"]}
+    sans_pendant = [e for e in module.EXCLUSIONS_VITRINE if _normaliser(e) not in exclus_sdist]
+    assert sans_pendant == [], (
+        f"Exclusions de la vitrine sans pendant dans l'`exclude` du sdist : {sans_pendant}. "
+        "Ces fichiers partiraient sur PyPI en étant absents de GitHub."
+    )
+
+
+def test_la_chaine_d_empaquetage_exe_reste_au_depot_de_developpement() -> None:
+    """Décision du 2026-08-25 (G3) : `construire_exe.py` ne part pas.
+
+    Le script lit `packaging/crszone-gui.spec`, et `packaging/` est hors des
+    deux périmètres depuis la Phase F. Publié seul, il serait mort dès le
+    clone. Plutôt que d'ouvrir `packaging/`, l'utilisateur a tranché de garder
+    toute la chaîne d'empaquetage au dépôt de travail.
+    """
+    module = _charger_script()
+    assert module.fichiers_a_publier(["scripts/construire_exe.py"]) == []
+    assert "/scripts/construire_exe.py" in _sdist()["exclude"]
+
+
 def test_exclut_les_documents_internes() -> None:
     """Aucun document interne ne traverse le filtre — c'est LA raison d'être du script.
 
@@ -136,6 +168,7 @@ def test_exclut_les_documents_internes() -> None:
     module = _charger_script()
     internes = [
         "docs/journal_de_bord.md",
+        "docs/journal_de_bord_Archive.md",
         "docs/module_prompt.md",
         "docs/registre_outillage.md",
         "docs/DETTE_TECHNIQUE.md",
@@ -146,6 +179,16 @@ def test_exclut_les_documents_internes() -> None:
         "outils_internes/config/reglage.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL.md",
         "tests/user_test/PROTOCOLE_TEST_MANUEL_Archive.md",
+        # Retirés de la vitrine le 2026-08-22 (décision utilisateur) : ces
+        # documents techniques restent maintenant au dépôt de développement
+        # seulement, aux côtés du reste de la doc interne ci-dessus.
+        "docs/ARCHITECTURE.md",
+        "docs/CLI_UX.md",
+        "docs/SPEC.md",
+        "docs/TEST_PLAN.md",
+        "docs/feuille_de_route.md",
+        "docs/calibrage/2026-07-19-calibrage-seuils.md",
+        "docs/exemple_rapport.html",
     ]
     assert module.fichiers_a_publier(internes) == []
 
@@ -271,8 +314,8 @@ def test_retient_l_essentiel() -> None:
         "tests/test_analysis.py",
         "scripts/regenerer_demos.py",
         ".github/workflows/ci.yml",
-        "docs/SPEC.md",
-        "docs/calibrage/2026-07-19-calibrage-seuils.md",
+        "docs/DATA_REFERENCE.md",
+        "docs/references.md",
         "docs/images/demo.gif",
     ]
     assert module.fichiers_a_publier(essentiels) == essentiels

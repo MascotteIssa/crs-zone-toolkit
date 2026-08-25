@@ -228,7 +228,7 @@ def test_generer_grille_format_invalide_leve_valueerror(tmp_path) -> None:
     import crs_zone_toolkit
 
     with pytest.raises(ValueError, match="xlsx"):
-        crs_zone_toolkit._generer_grille(region="qc", out=tmp_path / "g.xlsx", out_format="xlsx")
+        crs_zone_toolkit.generate_grid(region="qc", out=tmp_path / "g.xlsx", out_format="xlsx")
     assert not (tmp_path / "g.xlsx").exists()
 
 

@@ -42,6 +42,7 @@ IMAGES = DOCS / "images"
 EXEMPLE_RAPPORT = DOCS / "exemple_rapport.html"
 GIF = IMAGES / "demo.gif"
 README = RACINE / "README.md"
+PAGE_INTERFACE = RACINE / "src" / "crs_zone_toolkit" / "gui" / "web" / "index.html"
 COUCHE_DEFAUT = RACINE / "tests" / "user_test" / "data" / "bdat" / "regio_s.shp"
 REGION_DEFAUT = "qc"
 
@@ -389,6 +390,76 @@ def regenerer_captures(
     return produits
 
 
+def regenerer_captures_interface(
+    couche: Path = COUCHE_DEFAUT,
+    *,
+    region: str = REGION_DEFAUT,
+    page_html: Path = PAGE_INTERFACE,
+    sortie_dir: Path = IMAGES,
+    timeout_ms: int = 30_000,
+) -> list[Path]:
+    """Captures de l'écran de recommandation de l'interface, deux thèmes.
+
+    Même exigence que pour le rapport : la page photographiée est **celle que
+    l'application charge** (`gui/web/index.html`), peuplée par les **vrais
+    chiffres du moteur**. Rien n'est simulé sauf le pont `pywebview.api`, que
+    seule une fenêtre native peut fournir : on lui substitue un objet qui rend
+    exactement ce que rendrait `gui.service`, puis on suit le parcours réel de
+    l'écran (choisir un fichier, lancer l'analyse).
+
+    Le rendu n'a pas de cadre de fenêtre du système, et n'en a pas besoin : la
+    barre de titre visible appartient à la page elle-même.
+    """
+    if not page_html.is_file():  # pragma: no cover — déplacement de la page
+        raise SystemExit(f"{page_html} introuvable — aucune capture écrite.")
+    _, resultat, _, _ = _analyser(couche, region=region)
+
+    import json
+
+    from playwright.sync_api import sync_playwright
+
+    analyse = json.dumps(resultat.to_dict(), ensure_ascii=False)
+    pont = (
+        "window.pywebview = { api: {"
+        f"  analyze: async () => ({{ analysis: {analyse},"
+        "    report_path: 'C:/sorties/exemple_analyse_crs.html' }),"
+        "  pick_file: async () => 'C:/donnees/regio_s.shp',"
+        "  pick_folder: async () => 'C:/sorties',"
+        "  open_path: async () => null"
+        "} };"
+    )
+
+    sortie_dir.mkdir(parents=True, exist_ok=True)
+    url = page_html.resolve().as_uri()
+    produits: list[Path] = []
+
+    with sync_playwright() as p:
+        navigateur = p.chromium.launch(headless=True, timeout=timeout_ms)
+        try:
+            for theme, suffixe in (("light", "clair"), ("dark", "sombre")):
+                contexte = navigateur.new_context(
+                    viewport={"width": 960, "height": 720},
+                    device_scale_factor=2,
+                    color_scheme=theme,
+                )
+                page = contexte.new_page()
+                page.add_init_script(pont)
+                page.goto(url, timeout=timeout_ms)
+                page.click("[data-goto='fichier']", timeout=timeout_ms)
+                page.click("#browse", timeout=timeout_ms)
+                page.click("#btnAnalyser", timeout=timeout_ms)
+                page.wait_for_selector("section[data-screen='resultat'].active", timeout=timeout_ms)
+                page.wait_for_timeout(400)  # transition d'écran
+
+                cible = sortie_dir / f"interface-{suffixe}.png"
+                page.screenshot(path=str(cible))
+                produits.append(cible)
+                contexte.close()
+        finally:
+            navigateur.close()
+    return produits
+
+
 def _fenetre_html(code: str, foreground: str, background: str, *, titre: str) -> str:
     """Décor de fenêtre de terminal autour d'un fragment HTML déjà rendu par Rich.
 
@@ -547,7 +618,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--quoi",
-        choices=("apply", "captures", "exemple", "extrait", "gif", "tout"),
+        choices=("apply", "captures", "exemple", "extrait", "gif", "interface", "tout"),
         default="tout",
         help="Ressource(s) à régénérer.",
     )
@@ -574,6 +645,9 @@ def main(argv: list[str] | None = None) -> int:
         produits = regenerer_captures()
         for p in produits:
             print(f"Capture écrite : {p}")
+    if quoi in ("interface", "tout"):
+        for chemin_interface in regenerer_captures_interface(args.couche, region=args.region):
+            print(f"Capture d'interface écrite : {chemin_interface}")
     if quoi in ("gif", "tout"):
         regenerer_gif(args.couche, region=args.region)
     return 0

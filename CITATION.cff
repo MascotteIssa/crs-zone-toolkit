@@ -6,8 +6,8 @@ authors:
   - family-names: Moussahoudou
     given-names: Issa
     email: imoussahoudou@gmail.com
-version: 0.1.0
-date-released: "2026-08-02"
+version: 0.2.0
+date-released: "2026-08-25"
 license: MIT
 repository-code: "https://github.com/MascotteIssa/crs-zone-toolkit"
 identifiers:
