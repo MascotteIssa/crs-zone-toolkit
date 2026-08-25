@@ -88,6 +88,9 @@
 **[REF-28]** Goebel, H., Bajo, G., Vierra, D., Cortesi, D., & Zibricky, M. (s. d.). *PyInstaller Manual* [documentation logicielle, version 6.22.2]. Consulté le 25 août 2026, à l’adresse https://pyinstaller.org/en/stable/
 > Empaquetage de l’exécutable de bureau (registre outillage §5.2). L’analyse des dépendances y est **statique** : c’est la raison pour laquelle les données du paquet et les sous-modules compilés de `pyogrio` sont déclarés explicitement dans `packaging/crszone-gui.spec` — le premier `.exe` produit échouait faute de cette déclaration.
 
+**[REF-29]** Zenodo. (s. d.). *Describe software : CITATION.cff file · Zenodo JSON file* [documentation]. Consulté le 25 août 2026, aux adresses https://help.zenodo.org/docs/github/describe-software/citation-file/ et https://help.zenodo.org/docs/github/describe-software/zenodo-json
+> Justifie de **n’avoir pas ajouté de `.zenodo.json`** au dépôt (décision du 25 août 2026, journal). Deux faits vérifiés à la source : quand les deux fichiers coexistent, Zenodo lit **uniquement** le `.zenodo.json` et ignore entièrement le `CITATION.cff`, que GitHub continue pourtant d’utiliser pour son encart de citation, ce qui ferait deux sources de vérité à tenir synchronisées, soit la dérive que le projet combat depuis DT-19 ; et la liste des champs acceptés (`creators`, `contributors`, `title`, `version`, `access_right`, `related_identifiers`, `keywords`, `license`, `upload_type`, `language`, `grants`, `communities`) **ne contient ni « Programming language », ni « Development Status », ni « Publishing information »**, qui ne se saisissent que dans l’éditeur web d’un enregistrement. Le `CITATION.cff` reste donc la source unique, enrichi le 25 août 2026 et validé contre le schéma 1.2.0 (`cffconvert` 2.0.0).
+
 ---
 
 ## 4. Procédure

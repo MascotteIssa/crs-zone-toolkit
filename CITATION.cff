@@ -1,18 +1,32 @@
 cff-version: 1.2.0
 message: "Si vous utilisez cet outil dans un travail ou une publication, merci de le citer ainsi."
 type: software
-title: "crs-zone-toolkit : analyse, recommandation et reprojection CRS pour les couches géospatiales du Québec"
+title: "crs-zone-toolkit : analyse, recommandation et reprojection CRS pour les couches géospatiales du Québec"
 authors:
+  - family-names: Moussahoudou
+    given-names: Issa
+    email: imoussahoudou@gmail.com
+contact:
   - family-names: Moussahoudou
     given-names: Issa
     email: imoussahoudou@gmail.com
 version: 0.2.0
 date-released: "2026-08-25"
 license: MIT
+license-url: "https://github.com/MascotteIssa/crs-zone-toolkit/blob/main/LICENSE"
+url: "https://github.com/MascotteIssa/crs-zone-toolkit"
 repository-code: "https://github.com/MascotteIssa/crs-zone-toolkit"
+repository-artifact: "https://pypi.org/project/crs-zone-toolkit/"
 identifiers:
   - type: doi
     value: 10.5281/zenodo.21956685
+    description: "DOI de concept, à citer par défaut : il pointe toujours vers la dernière version."
+  - type: doi
+    value: 10.5281/zenodo.21958209
+    description: "DOI de la version 0.2.0, à citer pour reproduire un résultat précis."
+  - type: url
+    value: "https://pypi.org/project/crs-zone-toolkit/"
+    description: "Paquet installable sur PyPI."
 keywords:
   - gis
   - crs
@@ -21,9 +35,20 @@ keywords:
   - quebec
   - reprojection
   - geopandas
+  - python
+  - geodesy
+  - map-projection
+  - coordinate-reference-system
+  - nad83
+  - pyproj
+  - command-line-tool
 abstract: >-
-  Outil en ligne de commande (crszone) qui analyse une couche géospatiale,
-  mesure la distorsion des projections candidates du profil régional (fuseaux
-  MTM et Québec Lambert pour le Québec), recommande la projection la moins
-  déformée avec sa justification chiffrée, et applique la reprojection ou le
-  découpage par fuseau avec un journal de décision traçable.
+  Outil libre qui analyse une couche géospatiale, mesure la distorsion des
+  projections candidates du profil régional (fuseaux MTM et Québec Lambert pour
+  le Québec), recommande la projection la moins déformée avec sa justification
+  chiffrée, et applique la reprojection ou le découpage par fuseau avec un
+  journal de décision traçable. Il s’emploie en ligne de commande (crszone) ou
+  par une interface de bureau (crszone-gui), les deux appelant le même moteur.
+  Écrit en Python, il ne demande aucune donnée de référence à télécharger : la
+  grille des fuseaux, la limite du Québec et le profil géodésique voyagent dans
+  le paquet.
