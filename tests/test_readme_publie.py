@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+
 RACINE = Path(__file__).resolve().parent.parent
 README = RACINE / "README.md"
 SCRIPT_PUBLIER = RACINE / "scripts" / "publier_release.py"
@@ -125,7 +127,10 @@ def _perimetre_vitrine() -> tuple:
 
 
 def test_les_liens_du_readme_visent_des_fichiers_reellement_publies() -> None:
-    """Une URL du README doit viser un fichier qui EXISTE et qui est DANS la vitrine.
+    """Une URL du README doit viser un fichier que la vitrine PUBLIE.
+
+    (L'autre moitié — la cible existe vraiment — est le test suivant, gardé au
+    dépôt complet : les deux périmètres publiés ne sont pas le même.)
 
     Les liens sont absolus (test ci-dessus) et pointent sur le dépôt public :
     ils ne résolvent donc que si leur cible y est effectivement publiée. Or le
@@ -157,6 +162,23 @@ def test_les_liens_du_readme_visent_des_fichiers_reellement_publies() -> None:
         "le lien sort du README."
     )
 
+
+@pytest.mark.requiert_depot_git
+def test_les_liens_du_readme_visent_des_fichiers_qui_existent() -> None:
+    """Second volet : la cible existe vraiment — ce qu'un renommage casserait.
+
+    Séparé du contrôle de périmètre, et **gardé au dépôt complet**, parce que
+    les deux périmètres publiés ne sont pas le même : le sdist est
+    délibérément plus étroit que la vitrine (ni `docs/images/`, ni
+    `exemple_rapport.html` — `pyproject.toml` l'explique). Depuis un sdist
+    déplié, l'absence d'un fichier ne prouve donc rien.
+
+    Écrit d'un seul tenant avec le contrôle de périmètre le 2026-08-25, ce test
+    confondait les deux et **faisait tomber la suite rejouée depuis le sdist**
+    sur les sept images du README. Trouvé par cette rejouabilité même, avant
+    toute publication.
+    """
+    vises = _chemins_vises_dans_le_depot()
     absents = [
         f"ligne {numero} : {chemin}" for numero, chemin in vises if not (RACINE / chemin).is_file()
     ]

@@ -112,6 +112,7 @@ def _documents_publies() -> list[Path]:
     ]
 
 
+@pytest.mark.requiert_depot_git
 def test_aucun_document_publie_ne_montre_region_apres_la_sous_commande() -> None:
     """Même défaut, autre support : synopsis de la SPEC, extrait du README,
     rapport d'exemple. `docs/CLI_UX.md` §9 fait foi — `--region` est globale."""

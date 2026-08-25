@@ -377,6 +377,7 @@ def test_dt15_forcer_utf8_reconfigure_les_flux(monkeypatch) -> None:
     assert brut_out.getvalue().decode("utf-8") == "✓ copié"
 
 
+@pytest.mark.requiert_depot_git
 def test_dt15_publier_sous_cp1252_sort_en_utf8_avec_message_final(tmp_path: Path) -> None:
     """Le défaut reproduit : sous une console cp1252 (défaut Windows sans
     redirection UTF-8 explicite), le script copiait bien les fichiers puis

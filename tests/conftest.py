@@ -14,6 +14,44 @@ import numpy as np
 import pytest
 from shapely.geometry import LineString, MultiPoint, Point, Polygon, box
 
+# ── Tests qui exigent un dépôt git ─────────────────────────────────────────
+# Quelques tests interrogent l'ARBRE DU DÉPÔT (`git ls-files`, `git status`) ou
+# supposent un état complet : périmètre de publication, balayage des documents
+# publiés, existence des cibles de lien du README. Ils n'ont pas de sens depuis
+# un sdist déplié, qui n'est pas un dépôt git et ne porte qu'un EXTRAIT de
+# l'arbre (`docs/images/` par exemple en est exclu, cf. `pyproject.toml`).
+#
+# Sans cette garde ils ne sautaient pas : ils ÉCHOUAIENT (`git` en code 128),
+# ce qui rendait fausse la promesse de DT-21 — « la suite se rejoue depuis
+# l'archive dépliée ». Constaté le 2026-08-25 sur le sdist 0.2.0 et reproduit
+# sur le sdist **0.1.0 publié**, donc antérieur à cette passe. La propriété
+# elle-même n'a toujours aucune garde automatique : DT-32.
+#
+# Marqueur plutôt qu'objet importé : `tests/` n'a pas d'`__init__.py`, donc un
+# `from .conftest import …` ne résout pas. Le conftest étant chargé d'office
+# par pytest, le marqueur est disponible partout sans import ni duplication.
+RACINE_DEPOT = Path(__file__).resolve().parent.parent
+DANS_UN_DEPOT_GIT = (RACINE_DEPOT / ".git").exists()
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "requiert_depot_git: test qui interroge l'arbre du dépôt — sauté hors dépôt git",
+    )
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    if DANS_UN_DEPOT_GIT:
+        return
+    saut = pytest.mark.skip(
+        reason="exige l'arbre du dépôt git (sdist déplié) — cf. conftest, DT-21"
+    )
+    for item in items:
+        if item.get_closest_marker("requiert_depot_git") is not None:
+            item.add_marker(saut)
+
+
 # ── Profil factice `zz` (TP-41) ────────────────────────────────────────────
 # Deux fuseaux fictifs, bandes contiguës (0–1, 1–2), seuils exotiques : la
 # preuve qu'une nouvelle région = un dossier de plus, sans toucher au moteur.
