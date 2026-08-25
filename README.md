@@ -72,6 +72,15 @@ le paquet, au même titre que `crszone`) ouvre une fenêtre qui pose les mêmes 
 le terminal. Elle appelle le même moteur, sans qu’aucune règle de décision n’y soit écrite
 deux fois.
 
+Sous Windows, l’application existe aussi en fichier unique, qui ne demande d’installer ni
+Python ni quoi que ce soit d’autre. Vous le téléchargez, vous le lancez d’un double-clic :
+
+**[Télécharger `crszone-gui.exe` pour Windows](https://github.com/MascotteIssa/crs-zone-toolkit/releases/latest/download/crszone-gui.exe)** (90 Mo)
+
+Ce lien mène toujours à la version la plus récente. Le premier lancement demande une
+dizaine de secondes, le temps que le fichier se dépaquette (environ onze secondes à froid,
+cinq à six ensuite), et un écran d’attente s’affiche pendant ce temps.
+
 Le premier des deux parcours proposés, « Traiter une couche », se déroule en quatre
 étapes. Vous choisissez le fichier, l’outil l’analyse, il affiche sa recommandation avec
 les chiffres qui la fondent (part de chaque fuseau, distorsion mesurée), puis vous décidez
